@@ -127,6 +127,29 @@ create Table if not exists Tipo_receitas(
     Foreign Key (id_itensPedidos) REFERENCES Itens_pedido (id)
 );
 
+CREATE TABLE IF NOT EXISTS Respostas(
+    id int AUTO_INCREMENT PRIMARY KEY,
+    id_pedido int NOT NULL,
+    resposta TEXT NOT NULL,
+    data_resposta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_cumprimento INT DEFAULT NULL, -- ID do funcionário que irá aprovar ou rejeitar o pedido
+    FOREIGN KEY (id_cumprimento) REFERENCES Funcionarios(id) ON DELETE SET NULL -- Permite que o ID do funcionário que aprova/rejeita seja nulo se o funcionário for excluído
+    FOREIGN KEY (id_pedido) REFERENCES PedirAcesso(id) ON DELETE CASCADE -- Garante que a resposta seja removida se o pedido de acesso for excluído
+);
+
+CREATE TABLE IF NOT EXISTS PedirAcesso(
+    id int AUTO_INCREMENT PRIMARY KEY,
+    nome_funcionario VARCHAR(255) NOT NULL,
+    matricula_funcionario VARCHAR(255) not NULL,
+    cargo_funcionario VARCHAR(255) not NULL,
+    tipo_acess ENUM('cadastrar_funcionarios', 'comprar_estoque', 'vender_produto', 'cadastrar_produto', 'atualizar_estoque', 'visualizar_relatorios', 'aprovar_receita', 'aplicar_desconto') NOT NULL,
+    descricao TEXT NOT NULL,
+    status ENUM('pendente', 'aprovado', 'rejeitado') NOT NULL DEFAULT 'pendente',
+    data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_resposta INT DEFAULT NULL, -- ID da resposta associada
+    FOREIGN KEY (id_resposta) REFERENCES Respostas(id) ON DELETE SET NULL -- Permite que o ID da resposta seja nulo se a resposta for excluída
+);
+
 
 DROP DATABASE Farma_IFSP;
 
