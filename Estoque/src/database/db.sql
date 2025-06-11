@@ -4,15 +4,48 @@ use Farma_IFSP;
 
 CREATE TABLE IF NOT EXISTS Permissoes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) NOT NULL UNIQUE, -- Ex: gerente, caixa, farmaceutico, balconista
+    nome VARCHAR(50) NOT NULL UNIQUE, -- Ex: gerente, farmaceutico, balconista, caixa
+
+    -- Permissões administrativas
     cadastrar_funcionarios ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
-    comprar_estoque ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
-    vender_produto ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
-    cadastrar_produto ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    controlar_acesso_funcionarios ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+
+    -- Permissões de compras e fornecedores
+    cadastrar_compras ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    cancelar_compras ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    gerenciar_fornecedores ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+
+    -- Permissões de estoque
+    supervisionar_estoque ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
     atualizar_estoque ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
-    visualizar_relatorios ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
-    aprovar_receita ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
-    aplicar_desconto ENUM('sim', 'nao') NOT NULL DEFAULT 'nao'
+    consultar_estoque ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    registrar_baixa_estoque ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+
+    -- Permissões de vendas
+    registrar_venda_receita ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    registrar_venda_simples ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    finalizar_venda ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    emitir_nota_fiscal ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    registrar_pagamento ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+
+    -- Permissões de descontos e reembolsos
+    aplicar_desconto ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    aplicar_desconto_simples ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    autorizar_reembolso ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    solicitar_reembolso ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+
+    -- Permissões de receitas e controlados
+    analisar_receita ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    autorizar_controlados ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+
+    -- Permissões de relatórios
+    relatorio_financeiro ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    relatorio_vendas_diarias ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+
+    -- Outras permissões
+    gerar_orcamento ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    indicar_medicamento ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
+    solicitar_autorizacao ENUM('sim', 'nao') NOT NULL DEFAULT 'nao'
 );
 
 CREATE TABLE if not exists Cargos (
