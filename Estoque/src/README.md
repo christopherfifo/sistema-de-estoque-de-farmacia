@@ -5,13 +5,12 @@
 
 são os as funções que temos que desenvolver, ou seja, a parte do código
 
-- função de cadastro de gerente ou adm;
-- função de cadastro de funcionários e seus níveis de acessos, com a verificação se a pessoa tem autorização para efetuar o cadastro;
-- função de atribuição ou revogação de acesso;
-- função de login;
+
+
+
 - função de pedir permissão;
 - função de mudar a senha;
-- função de verificação de acesso;
+
 - função de formatação de dados e respostas (input e output);
 - função de controle de estoque;
 - função de alocação do estoque;
@@ -33,6 +32,13 @@ são os as funções que temos que desenvolver, ou seja, a parte do código
 - funções de exibição dos dados;
 - funções de respostas;
 
+requisitos ja feitos
+- função de login;
+- função de verificação de acesso;
+- - função de cadastro de gerente ou adm;
+- função de cadastro de funcionários e seus níveis de acessos, com a verificação se a pessoa tem autorização para efetuar o cadastro;
+- função de atribuição ou revogação de acesso;
+  
 # requisitos não funcionais
 
 são os agentes externos, como interpretamos e a forma como é inserida a informação pelo usuário, como também a resposta para o usuário, ou seja, tudo que é fator externo.
