@@ -5,7 +5,7 @@
 
 são os as funções que temos que desenvolver, ou seja, a parte do código
 
-
+- função de leitura de qrcode;
 
 
 - função de pedir permissão;
@@ -17,7 +17,7 @@ são os as funções que temos que desenvolver, ou seja, a parte do código
 - função de compra de estoque;
 - função de alerta de estoque;
 - função de busca no estoque;
-- função de leitura de qrcode;
+
 - função de cadastramento de receitas médicas;
 - função de liberação de medicação controlada apenas com a existência da receita médica;
 - função de listar o carrinho; 
