@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,7 +21,7 @@ public class GerenciadorPermissoes {
 
     private static Set<String> PERMISSOES_VALIDAS;
 
-    static {
+  static {
         PERMISSOES_VALIDAS = new HashSet<>();
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement("SELECT nome FROM Permissoes");
@@ -29,7 +30,8 @@ public class GerenciadorPermissoes {
                 PERMISSOES_VALIDAS.add(rs.getString("nome"));
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao carregar permissões válidas do banco: " + e.getMessage());
+            System.err.println("ERRO FATAL: Falha ao carregar permissões válidas do banco de dados.");
+            throw new RuntimeException("Não foi possível inicializar as permissões válidas da aplicação.", e);
         }
     }
 
@@ -38,18 +40,18 @@ public class GerenciadorPermissoes {
     }
 
     public boolean concederPermissao(String matriculaExecutor, String nomeCargoAlvo, String nomePermissao) {
-        return modificarPermissao(matriculaExecutor, nomeCargoAlvo, nomePermissao, "sim", "CONCEDER");
+        return modificarPermissao(matriculaExecutor, nomeCargoAlvo, nomePermissao, 1, "CONCEDER");
     }
 
     public boolean removerPermissao(String matriculaExecutor, String nomeCargoAlvo, String nomePermissao) {
-        return modificarPermissao(matriculaExecutor, nomeCargoAlvo, nomePermissao, "nao", "REMOVER");
+        return modificarPermissao(matriculaExecutor, nomeCargoAlvo, nomePermissao, 0, "REMOVER");
     }
 
     public Set<String> getPermissoesValidas() {
-        return PERMISSOES_VALIDAS;
+        return Collections.unmodifiableSet(PERMISSOES_VALIDAS);
     }
 
-    private boolean modificarPermissao(String matriculaExecutor, String nomeCargoAlvo, String nomePermissao, String novoValor, String acao) {
+    private boolean modificarPermissao(String matriculaExecutor, String nomeCargoAlvo, String nomePermissao, int novoValor, String acao) {
 
         if (!controleAcesso.temPermissao(matriculaExecutor, "controlar_acesso_funcionarios")) {
             System.out.println("ACESSO NEGADO: O usuário com matrícula '" + matriculaExecutor + "' não tem a permissão básica para alterar acessos.");
@@ -94,7 +96,7 @@ public class GerenciadorPermissoes {
             String sql = "UPDATE Permissoes SET " + nomePermissao + " = ? WHERE id = (SELECT id_permissao FROM Cargos WHERE nome = ?)";
 
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, novoValor);
+                stmt.setInt(1, novoValor);
                 stmt.setString(2, nomeCargoAlvo);
 
                 int linhasAfetadas = stmt.executeUpdate();
