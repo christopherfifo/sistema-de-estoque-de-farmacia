@@ -1,16 +1,13 @@
-import auxiliares.Funcionario;
+import javax.swing.SwingUtilities;
+import telas.TelaLogin;
 
 public class App {
-    public static void main(String[] args) throws Exception {
-        Funcionario usuarioLogado = Funcionario.login("123456", "senha123");
-
-        if (usuarioLogado != null) {
-            System.out.println("Login bem-sucedido!");
-            System.out.println("Bem-vindo, " + usuarioLogado.getNome() + "!");
-            System.out.println("Matrícula: " + usuarioLogado.getMatricula());
-            System.out.println("Cargo: " + usuarioLogado.getNomeCargo());
-        } else {
-            System.out.println("Falha no login. Verifique matrícula e senha.");
-        }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new TelaLogin().setVisible(true);
+            }
+        });
     }
 }
