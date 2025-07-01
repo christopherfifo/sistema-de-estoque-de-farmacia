@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,36 +18,50 @@ public class GerenciadorPermissoes {
 
     private final ControleAcesso controleAcesso;
 
-    private static final Set<String> PERMISSOES_VALIDAS = new HashSet<>(Arrays.asList(
-            "cadastrar_funcionarios", "controlar_acesso_funcionarios", "cadastrar_compras",
-            "cancelar_compras", "gerenciar_fornecedores", "supervisionar_estoque",
-            "atualizar_estoque", "consultar_estoque", "registrar_baixa_estoque",
-            "registrar_venda_receita", "registrar_venda_simples", "finalizar_venda",
-            "emitir_nota_fiscal", "registrar_pagamento", "aplicar_desconto",
-            "aplicar_desconto_simples", "autorizar_reembolso", "solicitar_reembolso",
-            "analisar_receita", "autorizar_controlados", "relatorio_financeiro",
-            "relatorio_vendas_diarias", "gerar_orcamento", "indicar_medicamento",
-            "solicitar_autorizacao"
-    ));
+    private static Set<String> PERMISSOES_VALIDAS;
+
+    static {
+        PERMISSOES_VALIDAS = new HashSet<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT nome FROM Permissoes");
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                PERMISSOES_VALIDAS.add(rs.getString("nome"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao carregar permissões válidas do banco: " + e.getMessage());
+        }
+    }
 
     public GerenciadorPermissoes() {
         this.controleAcesso = new ControleAcesso();
     }
 
-    public boolean modificarPermissaoCargo(String matriculaExecutor, String nomeCargoAlvo, String nomePermissao, boolean conceder) {
+    public boolean concederPermissao(String matriculaExecutor, String nomeCargoAlvo, String nomePermissao) {
+        return modificarPermissao(matriculaExecutor, nomeCargoAlvo, nomePermissao, "sim", "CONCEDER");
+    }
+
+    public boolean removerPermissao(String matriculaExecutor, String nomeCargoAlvo, String nomePermissao) {
+        return modificarPermissao(matriculaExecutor, nomeCargoAlvo, nomePermissao, "nao", "REMOVER");
+    }
+
+    public Set<String> getPermissoesValidas() {
+        return PERMISSOES_VALIDAS;
+    }
+
+    private boolean modificarPermissao(String matriculaExecutor, String nomeCargoAlvo, String nomePermissao, String novoValor, String acao) {
 
         if (!controleAcesso.temPermissao(matriculaExecutor, "controlar_acesso_funcionarios")) {
             System.out.println("ACESSO NEGADO: O usuário com matrícula '" + matriculaExecutor + "' não tem a permissão básica para alterar acessos.");
             return false;
         }
 
-        // 2. VALIDAÇÃO DE SEGURANÇA
+        // VALIDAÇÃO DE SEGURANÇA
         if (!PERMISSOES_VALIDAS.contains(nomePermissao)) {
             System.err.println("ERRO DE SEGURANÇA: Tentativa de modificar uma permissão inválida: '" + nomePermissao + "'.");
             return false;
         }
 
-        // Conexão será usada para a verificação de hierarquia e para a atualização
         try (Connection conn = DatabaseConnection.getConnection()) {
             
             String cargoExecutor = getCargoDoFuncionario(conn, matriculaExecutor);
@@ -58,8 +71,13 @@ public class GerenciadorPermissoes {
                 return false;
             }
 
-            // REGRA: Gerente não pode alterar permissões de outro Gerente ou de um Administrador
-            if (cargoExecutor.equalsIgnoreCase("Gerente")) {
+            // REGRAS DE HIERARQUIA
+            if (cargoExecutor.equalsIgnoreCase("Administrador")) {
+                if (nomeCargoAlvo.equalsIgnoreCase("Administrador")) {
+                    System.out.println("ACESSO NEGADO: Um Administrador não pode alterar as permissões de outro Administrador.");
+                    return false;
+                }
+            } else if (cargoExecutor.equalsIgnoreCase("Gerente")) {
                 if (nomeCargoAlvo.equalsIgnoreCase("Gerente")) {
                     System.out.println("ACESSO NEGADO: Um Gerente não pode alterar as permissões de outro Gerente.");
                     return false;
@@ -68,10 +86,12 @@ public class GerenciadorPermissoes {
                     System.out.println("ACESSO NEGADO: Um Gerente não pode alterar as permissões de um Administrador.");
                     return false;
                 }
+            } else {
+                System.out.println("ACESSO NEGADO: Apenas Administradores e Gerentes podem alterar permissões. Cargo atual: '" + cargoExecutor + "'.");
+                return false;
             }
             
             String sql = "UPDATE Permissoes SET " + nomePermissao + " = ? WHERE id = (SELECT id_permissao FROM Cargos WHERE nome = ?)";
-            String novoValor = conceder ? "sim" : "nao";
 
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, novoValor);
@@ -80,7 +100,7 @@ public class GerenciadorPermissoes {
                 int linhasAfetadas = stmt.executeUpdate();
 
                 if (linhasAfetadas > 0) {
-                    System.out.println("SUCESSO: Permissão '" + nomePermissao + "' foi atualizada para '" + novoValor + "' no cargo '" + nomeCargoAlvo + "'.");
+                    System.out.println("SUCESSO: Permissão '" + nomePermissao + "' foi " + acao.toLowerCase() + "da para o cargo '" + nomeCargoAlvo + "'.");
                     return true;
                 } else {
                     System.err.println("Falha ao atualizar: O cargo '" + nomeCargoAlvo + "' não foi encontrado.");
