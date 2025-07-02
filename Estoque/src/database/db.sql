@@ -93,23 +93,22 @@ create table if not EXISTS Estoque(
     id_produto int not null,
     id_local int not NULL,
     quantidade int,
-    fabricante VARCHAR(255) not null,
     lote VARCHAR(255) NOT NULL,
     data_fabricacao DATE NOT NULL,
     data_validade DATE NOT NULL,
     local_armazenado text,
-    nfCompra 	text,
-    precoCompra 	decimal(15,2),
-    icmsCompra 	decimal(15,2),
-    precoVenda 	decimal(15,2),
+    nfCompra text,
+    precoCompra decimal(15,2),
+    icmsCompra decimal(15,2),
+    precoVenda decimal(15,2),
     desconto ENUM('sim', 'nao') NOT NULL DEFAULT 'nao',
     desconto_padrao decimal(15,2),
-    venda_desconto int, -- aqui seria o desconto do convenio que é varival, pode ser valor ou porcentagem
+    venda_desconto int,
     tipo_venda_desconto ENUM('valor', 'porcentagem') NOT NULL DEFAULT 'valor',
-    qtdVendida 	int,
+    qtdVendida int,
     qtdOcorrencia int,
     qtd_minima INT DEFAULT 0,
-    ocorrencia 	varchar(1024),
+    ocorrencia varchar(1024),
     Foreign Key (id_produto) REFERENCES Produtos (id), 
     Foreign Key (id_local) REFERENCES Areas_estoque (id)
 );
@@ -124,6 +123,7 @@ CREATE TABLE if not exists Pedidos (
     notaFiscal text,
     dtRecebimento datetime,
     valorTotal decimal(12,2),
+    sub_total DECIMAL(12,2),  
     qtdItems int,
     forma_pagamento ENUM('dinheiro', 'cartao_credito', 'cartao_debito', 'pix', 'boleto', 'outro') NOT NULL,
     quantidade_parcelas int,
@@ -239,6 +239,7 @@ INSERT INTO Areas_estoque (setor, andar, tipo_armazenamento, prateleira) VALUES
 ('Controlados', 'Balcão', 'padrao', 'C1-Trancado'),
 ('Refrigerados', 'Depósito', 'refrigerado', 'Geladeira Farma-01');
 
+-- O INSERT do Estoque precisa ser corrigido, removendo a coluna 'fabricante':
 INSERT INTO Estoque (id_produto, id_local, quantidade, lote, data_fabricacao, data_validade, precoVenda) VALUES
 (1, 1, 150, 'LOTE_DIP202401', '2024-01-15', '2026-01-15', 12.50),
 (2, 3, 80, 'LOTE_AMX202403', '2024-03-20', '2025-03-20', 35.75),
