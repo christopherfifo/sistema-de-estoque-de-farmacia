@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS Permissoes (
 CREATE TABLE if not exists Cargos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome ENUM('Administrador', 'Caixa', 'Farmaceutico', 'Gerente') NOT NULL,
-    id_permissao INT,
+    id_permissao INT NULL,
     FOREIGN KEY (id_permissao) REFERENCES Permissoes(id)
 );
 
@@ -57,7 +57,7 @@ CREATE Table if not exists Funcionarios(
     telefone VARCHAR(255) NOT NULL,
     senha VARCHAR(255) NOT NULL,
     tipo ENUM('funcionario', 'adm', 'dono') NOT NULL DEFAULT 'funcionario',
-    id_cargo int not NULL,    
+    id_cargo int NULL,    
     atividade VARCHAR(255) NOT NULL DEFAULT 'ativo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -174,32 +174,6 @@ CREATE TABLE IF NOT EXISTS Profissional(
     FOREIGN KEY (id_receita) REFERENCES Receitas(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS PedirAcesso(
-    id int AUTO_INCREMENT PRIMARY KEY,
-    nome_funcionario VARCHAR(255) NOT NULL,
-    matricula_funcionario VARCHAR(255) not NULL,
-    cargo_funcionario VARCHAR(255) not NULL,
-    tipo_acess ENUM('cadastrar_funcionarios', 'comprar_estoque', 'vender_produto', 'cadastrar_produto', 'atualizar_estoque', 'visualizar_relatorios', 'aprovar_receita', 'aplicar_desconto') NOT NULL,
-    descricao TEXT NOT NULL,
-    status ENUM('pendente', 'aprovado', 'rejeitado') NOT NULL DEFAULT 'pendente',
-    data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    id_resposta INT DEFAULT NULL -- ID da resposta associada
-	-- a foreign key vai ser adicionada depois
-);
-
-CREATE TABLE IF NOT EXISTS Respostas(
-    id int AUTO_INCREMENT PRIMARY KEY,
-    id_pedido int NOT NULL,
-    resposta TEXT NOT NULL,
-    data_resposta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    id_cumprimento INT DEFAULT NULL, -- ID do funcionário que irá aprovar ou rejeitar o pedido
-    FOREIGN KEY (id_cumprimento) REFERENCES Funcionarios(id) ON DELETE SET NULL, -- Permite que o ID do funcionário que aprova/rejeita seja nulo se o funcionário for excluído
-    FOREIGN KEY (id_pedido) REFERENCES PedirAcesso(id) ON DELETE CASCADE -- Garante que a resposta seja removida se o pedido de acesso for excluído
-);
-
-ALTER TABLE PedirAcesso
-ADD CONSTRAINT fk_pediracesso_resposta
-FOREIGN KEY (id_resposta) REFERENCES Respostas(id) ON DELETE SET NULL;
 
 
 DROP DATABASE Farma_IFSP;
@@ -239,11 +213,11 @@ INSERT INTO Permissoes (
 (3, 'Permissao_Farmaceutico', 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1),
 (4, 'Permissao_Caixa', 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
 
-INSERT INTO Cargos (id, nome, id_permissao) VALUES
-(1, 'Administrador', 1),
-(2, 'Gerente', 2),
-(3, 'Farmaceutico', 3),
-(4, 'Caixa', 4);
+INSERT INTO Cargos ( nome, id_permissao) VALUES
+( 'Administrador', 1),
+( 'Gerente', 2),
+( 'Farmaceutico', 3),
+( 'Caixa', 4);
 
 INSERT INTO Funcionarios (nome, cpf, matricula, email, telefone, senha, tipo, id_cargo, atividade) VALUES
 ('Gabriel Admin', '111.111.111-11', 'admin', 'admin@farma.com', '11911111111', 'admin123', 'adm', 1, 'ativo'),
