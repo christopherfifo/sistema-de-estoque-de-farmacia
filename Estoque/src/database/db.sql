@@ -179,10 +179,12 @@ ALTER TABLE Pedidos ADD COLUMN sub_total DECIMAL(12,2) AFTER valorTotal;
 
 -- inserts
 
+-- Corrija a linha 178 do seu arquivo SQL:
+
 INSERT INTO Permissoes (
-    id, nome,
+    nome,
     cadastrar_funcionarios,
-    controlar_acesso_funcionarios,
+    controlar_acesso_funcionarios,  
     cadastrar_compras,
     cancelar_compras,
     gerenciar_fornecedores,
@@ -207,10 +209,10 @@ INSERT INTO Permissoes (
     indicar_medicamento,
     solicitar_autorizacao
 ) VALUES
-(1, 'Permissao_Admin', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-(2, 'Permissao_Gerente', 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-(3, 'Permissao_Farmaceutico', 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1),
-(4, 'Permissao_Caixa', 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
+('Permissao_Farmaceutico', 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1),
+('Permissao_Gerente', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1),
+('Permissao_Admin', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+('Permissao_Caixa', 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0);
 
 INSERT INTO Cargos ( nome, id_permissao) VALUES
 ( 'Administrador', 1),
@@ -223,6 +225,8 @@ INSERT INTO Funcionarios (nome, cpf, matricula, email, telefone, senha, tipo, id
 ('Christopher Gerente', '222.222.222-22', 'gerente', 'gerente@farma.com', '11922222222', 'gerente123', 'funcionario', 2, 'ativo'),
 ('Joao Farmaceutico', '333.333.333-33', 'farma', 'farma@farma.com', '11933333333', 'farma123', 'funcionario', 3, 'ativo'),
 ('Jessica Caixa', '444.444.444-44', 'caixa', 'caixa@farma.com', '11944444444', 'caixa123', 'funcionario', 4, 'ativo');
+
+SELECT * from Funcionarios; 
 
 INSERT INTO Produtos (nome, descricao, armazenamento, armazenamento_especial, receita_obrigatoria, fabricante, categoria, tarja, preco) VALUES
 ('Dipirona Sódica 500mg', 'Analgésico e antitérmico. Caixa com 10 comprimidos.', 'Temperatura ambiente', 'nao', 'nao', 'Medley', 'medicamento', 'vermelha', 12.50),

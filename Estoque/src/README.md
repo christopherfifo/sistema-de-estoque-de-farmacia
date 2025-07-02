@@ -8,9 +8,6 @@ são os as funções que temos que desenvolver, ou seja, a parte do código
 - função de leitura de qrcode;
 
 
-- função de pedir permissão;
-- função de mudar a senha;
-
 - função de formatação de dados e respostas (input e output);
 - função de controle de estoque;
 - função de alocação do estoque;
