@@ -3,6 +3,7 @@ package telas;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.math.BigDecimal;
 import java.util.List;
 import acessos.ControleAcesso;
 import auxiliares.Estoque;
@@ -25,6 +26,7 @@ public class PainelVenda extends JPanel {
     private JTable tabelaCarrinho;
     private DefaultTableModel modeloTabelaCarrinho;
     private JLabel lblTotal;
+    private JLabel lblDesconto;
     private JTextField txtBuscaProduto;
 
     public PainelVenda(Funcionario usuario) {
@@ -67,15 +69,25 @@ public class PainelVenda extends JPanel {
 
         JPanel painelSulCarrinho = new JPanel(new BorderLayout());
         JPanel painelBotoesAcao = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel painelValores = new JPanel();
+        painelValores.setLayout(new BoxLayout(painelValores, BoxLayout.Y_AXIS));
+
+        lblDesconto = new JLabel("Desconto: R$ 0.00 (0.00%)");
         lblTotal = new JLabel("Total: R$ 0.00");
         lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 18));
+
+        painelValores.add(lblDesconto);
+        painelValores.add(lblTotal);
+
+        JButton btnAplicarDesconto = new JButton("Aplicar Desconto");
         JButton btnFinalizarVenda = new JButton("Finalizar Venda");
         JButton btnCancelarVenda = new JButton("Cancelar Venda Anterior");
 
+        painelBotoesAcao.add(btnAplicarDesconto);
         painelBotoesAcao.add(btnCancelarVenda);
         painelBotoesAcao.add(btnFinalizarVenda);
 
-        painelSulCarrinho.add(lblTotal, BorderLayout.WEST);
+        painelSulCarrinho.add(painelValores, BorderLayout.WEST);
         painelSulCarrinho.add(painelBotoesAcao, BorderLayout.EAST);
         painelCarrinho.add(painelSulCarrinho, BorderLayout.SOUTH);
 
@@ -85,6 +97,7 @@ public class PainelVenda extends JPanel {
         btnAdicionarCarrinho.addActionListener(e -> adicionarAoCarrinho());
         btnFinalizarVenda.addActionListener(e -> finalizarVenda());
         btnCancelarVenda.addActionListener(e -> cancelarVendaAnterior());
+        btnAplicarDesconto.addActionListener(e -> aplicarDesconto());
     }
 
     public void buscarItens() {
@@ -137,13 +150,13 @@ public class PainelVenda extends JPanel {
         try {
             int quantidade = Integer.parseInt(qtdStr);
             carrinho.adicionarItem(itemSelecionado, quantidade);
-            atualizarTabelaCarrinho();
+            atualizarVisualizacaoCarrinho();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Quantidade invalida", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void atualizarTabelaCarrinho() {
+    private void atualizarVisualizacaoCarrinho() {
         modeloTabelaCarrinho.setRowCount(0);
         for (var item : carrinho.getItens()) {
             modeloTabelaCarrinho.addRow(new Object[] {
@@ -153,7 +166,13 @@ public class PainelVenda extends JPanel {
                     item.getSubtotal()
             });
         }
-        lblTotal.setText("Total: R$ " + String.format("%.2f", carrinho.calcularTotal()));
+
+        String textoDesconto = String.format("Desconto: R$ %.2f (%.2f%%)", carrinho.getValorDesconto(),
+                carrinho.getPercentualDesconto());
+        lblDesconto.setText(textoDesconto);
+
+        String textoTotal = String.format("Total: R$ %.2f", carrinho.calcularTotal());
+        lblTotal.setText(textoTotal);
     }
 
     private void finalizarVenda() {
@@ -173,10 +192,9 @@ public class PainelVenda extends JPanel {
 
         if (idVenda != -1) {
             carrinho.limpar();
-            atualizarTabelaCarrinho();
+            atualizarVisualizacaoCarrinho();
             buscarItens();
 
-            // Gerar e exibir o recibo
             GeradorDeRecibos gerador = new GeradorDeRecibos();
             String recibo = gerador.gerarReciboVenda(idVenda);
             exibirRecibo(recibo);
@@ -220,6 +238,27 @@ public class PainelVenda extends JPanel {
             }
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "ID do pedido invalido", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void aplicarDesconto() {
+        if (!controleAcesso.temPermissao(usuarioLogado.getMatricula(), "aplicar_desconto")) {
+            JOptionPane.showMessageDialog(this, "ACESSO NEGADO: Voce nao tem permissao para aplicar descontos", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String percStr = JOptionPane.showInputDialog(this, "Digite o percentual de desconto (%):", "Aplicar Desconto",
+                JOptionPane.PLAIN_MESSAGE);
+        if (percStr == null)
+            return;
+
+        try {
+            BigDecimal percentual = new BigDecimal(percStr.replace(",", "."));
+            carrinho.aplicarDesconto(percentual);
+            atualizarVisualizacaoCarrinho();
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Percentual de desconto invalido", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

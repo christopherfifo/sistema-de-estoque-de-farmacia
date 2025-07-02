@@ -1,5 +1,6 @@
 package gerencia;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,7 +21,7 @@ public class GeradorDeRecibos {
         NumberFormat formatadorMoeda = NumberFormat.getCurrencyInstance(brLocale);
         DateTimeFormatter formatadorData = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
-        String sqlPedido = "SELECT valorTotal, forma_pagamento, dtPedido FROM Pedidos WHERE id = ?";
+        String sqlPedido = "SELECT valorTotal, sub_total, forma_pagamento, dtPedido FROM Pedidos WHERE id = ?";
         String sqlItens = "SELECT i.quantidade, i.preco_unitario, p.nome " +
                 "FROM Itens_pedido i JOIN Produtos p ON i.id_produto = p.id " +
                 "WHERE i.id_pedido = ?";
@@ -32,6 +33,10 @@ public class GeradorDeRecibos {
             stmtPedido.setLong(1, idPedido);
             try (ResultSet rsPedido = stmtPedido.executeQuery()) {
                 if (rsPedido.next()) {
+                    BigDecimal total = rsPedido.getBigDecimal("valorTotal");
+                    BigDecimal subtotal = rsPedido.getBigDecimal("sub_total");
+                    BigDecimal desconto = (subtotal != null) ? subtotal.subtract(total) : BigDecimal.ZERO;
+
                     recibo.append("--------------------------------------------------\n");
                     recibo.append("              RECIBO DE VENDA\n");
                     recibo.append("                  FARMA IFSP\n");
@@ -58,8 +63,11 @@ public class GeradorDeRecibos {
                     }
 
                     recibo.append("--------------------------------------------------\n");
-                    recibo.append(String.format("TOTAL: %39s\n",
-                            formatadorMoeda.format(rsPedido.getBigDecimal("valorTotal"))));
+                    if (subtotal != null) {
+                        recibo.append(String.format("Subtotal: %36s\n", formatadorMoeda.format(subtotal)));
+                        recibo.append(String.format("Desconto: %36s\n", formatadorMoeda.format(desconto)));
+                    }
+                    recibo.append(String.format("TOTAL: %39s\n", formatadorMoeda.format(total)));
                     recibo.append("Forma de Pagamento: ").append(rsPedido.getString("forma_pagamento")).append("\n");
                     recibo.append("--------------------------------------------------\n");
 

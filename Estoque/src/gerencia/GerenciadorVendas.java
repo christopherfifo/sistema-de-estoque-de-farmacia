@@ -43,14 +43,15 @@ public class GerenciadorVendas {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
 
-            String sqlPedido = "INSERT INTO Pedidos (dtPedido, valorTotal, qtdItems, forma_pagamento, dtPagamento) VALUES (?, ?, ?, ?, ?)";
+            String sqlPedido = "INSERT INTO Pedidos (dtPedido, valorTotal, sub_total, qtdItems, forma_pagamento, dtPagamento) VALUES (?, ?, ?, ?, ?, ?)";
             long idPedido;
             try (PreparedStatement stmtPedido = conn.prepareStatement(sqlPedido, Statement.RETURN_GENERATED_KEYS)) {
                 stmtPedido.setTimestamp(1, Timestamp.from(Instant.now()));
                 stmtPedido.setBigDecimal(2, carrinho.calcularTotal());
-                stmtPedido.setInt(3, carrinho.getItens().size());
-                stmtPedido.setString(4, formaPagamento);
-                stmtPedido.setTimestamp(5, Timestamp.from(Instant.now()));
+                stmtPedido.setBigDecimal(3, carrinho.getSubtotal());
+                stmtPedido.setInt(4, carrinho.getItens().size());
+                stmtPedido.setString(5, formaPagamento);
+                stmtPedido.setTimestamp(6, Timestamp.from(Instant.now()));
                 stmtPedido.executeUpdate();
 
                 try (ResultSet rs = stmtPedido.getGeneratedKeys()) {

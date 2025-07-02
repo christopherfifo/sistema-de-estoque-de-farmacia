@@ -175,6 +175,8 @@ CREATE TABLE IF NOT EXISTS Profissional(
     FOREIGN KEY (id_receita) REFERENCES Receitas(id) ON DELETE CASCADE
 );
 
+ALTER TABLE Pedidos ADD COLUMN sub_total DECIMAL(12,2) AFTER valorTotal;
+
 -- inserts
 
 INSERT INTO Permissoes (
