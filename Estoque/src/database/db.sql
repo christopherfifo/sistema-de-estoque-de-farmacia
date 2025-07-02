@@ -175,9 +175,6 @@ CREATE TABLE IF NOT EXISTS Profissional(
     FOREIGN KEY (id_receita) REFERENCES Receitas(id) ON DELETE CASCADE
 );
 
-ALTER TABLE Pedidos ADD COLUMN sub_total DECIMAL(12,2) AFTER valorTotal;
-ALTER TABLE Estoque DROP COLUMN fabricante;
-
 
 -- inserts
 
@@ -239,10 +236,23 @@ INSERT INTO Areas_estoque (setor, andar, tipo_armazenamento, prateleira) VALUES
 ('Controlados', 'Balcão', 'padrao', 'C1-Trancado'),
 ('Refrigerados', 'Depósito', 'refrigerado', 'Geladeira Farma-01');
 
--- O INSERT do Estoque precisa ser corrigido, removendo a coluna 'fabricante':
-INSERT INTO Estoque (id_produto, id_local, quantidade, lote, data_fabricacao, data_validade, precoVenda) VALUES
-(1, 1, 150, 'LOTE_DIP202401', '2024-01-15', '2026-01-15', 12.50),
-(2, 3, 80, 'LOTE_AMX202403', '2024-03-20', '2025-03-20', 35.75),
-(3, 2, 120, 'LOTE_PROT202311', '2023-11-01', '2025-11-01', 45.90),
-(4, 2, 200, 'LOTE_SHA202405', '2024-05-10', '2027-05-10', 22.00),
-(5, 4, 40, 'LOTE_INS202406', '2024-06-01', '2025-06-01', 78.30);
+INSERT INTO Estoque (id_produto, id_local, quantidade, qtd_minima, lote, data_fabricacao, data_validade, precoVenda) VALUES
+(1, 1, 150, 20, 'LOTE_DIP202401', '2024-01-15', '2026-01-15', 12.50),
+(2, 3, 80, 15, 'LOTE_AMX202403', '2024-03-20', '2025-03-20', 35.75),
+(3, 2, 120, 30, 'LOTE_PROT202311', '2023-11-01', '2025-11-01', 45.90),
+(4, 2, 20, 25, 'LOTE_SHA202405', '2024-05-10', '2027-05-10', 22.00),
+(5, 4, 40, 10, 'LOTE_INS202406', '2024-06-01', '2025-06-01', 78.30);
+
+INSERT INTO Produtos (nome, descricao, armazenamento, receita_obrigatoria, fabricante, categoria, tarja, preco) VALUES
+('Paracetamol 750mg', 'Analgésico e antitérmico. Caixa com 20 comprimidos.', 'Temperatura ambiente', 'nao', 'Generico EMS', 'medicamento', 'amarela', 9.80),
+('Loratadina 10mg', 'Antialérgico. Caixa com 12 comprimidos.', 'Temperatura ambiente', 'nao', 'Cimed', 'medicamento', 'isento', 15.00),
+('Fio Dental Menta 50m', 'Fio dental encerado sabor menta.', 'Temperatura ambiente', 'nao', 'Oral-B', 'higiene', 'isento', 8.50);
+
+INSERT INTO Estoque (id_produto, id_local, quantidade, qtd_minima, lote, data_fabricacao, data_validade, precoVenda) VALUES
+(6, 1, 15, 20, 'LOTE_PAR_LOW', '2024-02-01', '2026-02-01', 9.80);
+
+INSERT INTO Estoque (id_produto, id_local, quantidade, qtd_minima, lote, data_fabricacao, data_validade, precoVenda) VALUES
+(7, 1, 100, 20, 'LOTE_LOR_EXP', '2023-07-30', '2025-07-30', 15.00);
+
+INSERT INTO Estoque (id_produto, id_local, quantidade, qtd_minima, lote, data_fabricacao, data_validade, precoVenda) VALUES
+(8, 2, 200, 50, 'LOTE_FIO_OK', '2024-01-01', '2028-01-01', 8.50);

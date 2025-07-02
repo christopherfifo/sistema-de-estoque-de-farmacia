@@ -10,13 +10,11 @@ import java.awt.*;
 public class TelaPrincipal extends JFrame {
 
     private final Funcionario usuarioLogado;
+    private PainelDashboard painelDashboard;
     private PainelGerenciarEstoque painelEstoque;
     private PainelVenda painelVenda;
     private PainelHistoricoVendas painelHistorico;
     private PainelCadastroProduto painelCadastro;
-
-    private boolean estoqueJaCarregado = false;
-    private boolean vendaJaCarregada = false;
 
     public TelaPrincipal(Funcionario funcionario) {
         this.usuarioLogado = funcionario;
@@ -31,17 +29,13 @@ public class TelaPrincipal extends JFrame {
 
         JTabbedPane painelComAbas = new JTabbedPane();
 
-        JPanel painelBoasVindas = new JPanel(new GridBagLayout());
-        JLabel lblMensagem = new JLabel("Selecione uma opcao nas abas acima");
-        lblMensagem.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        painelBoasVindas.add(lblMensagem);
-
+        this.painelDashboard = new PainelDashboard();
         this.painelEstoque = new PainelGerenciarEstoque(this.usuarioLogado);
         this.painelVenda = new PainelVenda(this.usuarioLogado);
         this.painelHistorico = new PainelHistoricoVendas();
         this.painelCadastro = new PainelCadastroProduto(this.usuarioLogado);
 
-        painelComAbas.addTab("Inicio", painelBoasVindas);
+        painelComAbas.addTab("Dashboard", this.painelDashboard);
         painelComAbas.addTab("Ponto de Venda", this.painelVenda);
         painelComAbas.addTab("Gerenciar Estoque", this.painelEstoque);
         painelComAbas.addTab("Historico de Vendas", this.painelHistorico);
@@ -49,17 +43,22 @@ public class TelaPrincipal extends JFrame {
 
         painelComAbas.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                if (painelComAbas.getSelectedComponent() == painelEstoque && !estoqueJaCarregado) {
+                Component painelSelecionado = painelComAbas.getSelectedComponent();
+
+                if (painelSelecionado == painelDashboard) {
+                    painelDashboard.carregarAlertas();
+                } else if (painelSelecionado == painelEstoque) {
                     painelEstoque.carregarEstoque();
-                    estoqueJaCarregado = true;
-                } else if (painelComAbas.getSelectedComponent() == painelVenda && !vendaJaCarregada) {
+                } else if (painelSelecionado == painelVenda) {
                     painelVenda.buscarItens();
-                    vendaJaCarregada = true;
-                } else if (painelComAbas.getSelectedComponent() == painelHistorico) {
+                } else if (painelSelecionado == painelHistorico) {
                     painelHistorico.carregarHistorico();
                 }
             }
         });
+
+        // Carrega o dashboard inicial ao abrir a tela
+        painelDashboard.carregarAlertas();
 
         add(painelComAbas);
     }
@@ -82,7 +81,6 @@ public class TelaPrincipal extends JFrame {
         menuOpcoes.add(itemSair);
 
         menuBar.add(menuOpcoes);
-
         return menuBar;
     }
 

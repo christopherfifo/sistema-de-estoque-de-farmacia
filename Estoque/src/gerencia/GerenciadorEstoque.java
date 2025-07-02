@@ -29,7 +29,7 @@ public class GerenciadorEstoque {
 
         List<Estoque> itensEncontrados = new ArrayList<>();
 
-        String sql = "SELECT e.id, e.quantidade, e.lote, e.data_validade, " +
+        String sql = "SELECT e.id, e.quantidade, e.qtd_minima, e.lote, e.data_validade, " +
                 "p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, "
                 +
                 "a.id as id_area, a.setor, a.prateleira " +
@@ -45,28 +45,14 @@ public class GerenciadorEstoque {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Produto produto = new Produto(
-                            rs.getInt("id_produto"),
-                            rs.getString("nome"),
-                            rs.getString("descricao"),
-                            rs.getString("fabricante"),
-                            rs.getString("categoria"),
-                            rs.getString("tarja"),
-                            rs.getBigDecimal("preco"),
+                    Produto produto = new Produto(rs.getInt("id_produto"), rs.getString("nome"),
+                            rs.getString("descricao"), rs.getString("fabricante"), rs.getString("categoria"),
+                            rs.getString("tarja"), rs.getBigDecimal("preco"),
                             rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
-
-                    AreaEstoque area = new AreaEstoque(
-                            rs.getInt("id_area"),
-                            rs.getString("setor"),
+                    AreaEstoque area = new AreaEstoque(rs.getInt("id_area"), rs.getString("setor"),
                             rs.getString("prateleira"));
-
-                    Estoque itemEstoque = new Estoque(
-                            rs.getInt("id"),
-                            rs.getInt("quantidade"),
-                            rs.getString("lote"),
-                            rs.getDate("data_validade").toLocalDate(),
-                            produto,
-                            area);
+                    Estoque itemEstoque = new Estoque(rs.getInt("id"), rs.getInt("quantidade"), rs.getInt("qtd_minima"),
+                            rs.getString("lote"), rs.getDate("data_validade").toLocalDate(), produto, area);
                     itensEncontrados.add(itemEstoque);
                 }
             }
@@ -84,7 +70,7 @@ public class GerenciadorEstoque {
             return null;
         }
 
-        String sql = "SELECT e.id, e.quantidade, e.lote, e.data_validade, " +
+        String sql = "SELECT e.id, e.quantidade, e.qtd_minima, e.lote, e.data_validade, " +
                 "p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, "
                 +
                 "a.id as id_area, a.setor, a.prateleira " +
@@ -100,28 +86,14 @@ public class GerenciadorEstoque {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Produto produto = new Produto(
-                            rs.getInt("id_produto"),
-                            rs.getString("nome"),
-                            rs.getString("descricao"),
-                            rs.getString("fabricante"),
-                            rs.getString("categoria"),
-                            rs.getString("tarja"),
-                            rs.getBigDecimal("preco"),
+                    Produto produto = new Produto(rs.getInt("id_produto"), rs.getString("nome"),
+                            rs.getString("descricao"), rs.getString("fabricante"), rs.getString("categoria"),
+                            rs.getString("tarja"), rs.getBigDecimal("preco"),
                             rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
-
-                    AreaEstoque area = new AreaEstoque(
-                            rs.getInt("id_area"),
-                            rs.getString("setor"),
+                    AreaEstoque area = new AreaEstoque(rs.getInt("id_area"), rs.getString("setor"),
                             rs.getString("prateleira"));
-
-                    return new Estoque(
-                            rs.getInt("id"),
-                            rs.getInt("quantidade"),
-                            rs.getString("lote"),
-                            rs.getDate("data_validade").toLocalDate(),
-                            produto,
-                            area);
+                    return new Estoque(rs.getInt("id"), rs.getInt("quantidade"), rs.getInt("qtd_minima"),
+                            rs.getString("lote"), rs.getDate("data_validade").toLocalDate(), produto, area);
                 }
             }
         } catch (Exception e) {
@@ -187,10 +159,7 @@ public class GerenciadorEstoque {
                 ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                areas.add(new AreaEstoque(
-                        rs.getInt("id"),
-                        rs.getString("setor"),
-                        rs.getString("prateleira")));
+                areas.add(new AreaEstoque(rs.getInt("id"), rs.getString("setor"), rs.getString("prateleira")));
             }
         } catch (Exception e) {
             System.err.println("Erro ao buscar areas de estoque: " + e.getMessage());
@@ -222,27 +191,94 @@ public class GerenciadorEstoque {
         }
     }
 
-    /**
-     * Adiciona um lote inicial de um produto recem-cadastrado ao estoque
-     */
-    public boolean adicionarLoteDeEstoque(int idProduto, int quantidade, String lote, LocalDate dataValidade, int idArea, Funcionario executor) {
+    public List<Estoque> buscarProdutosComEstoqueBaixo() {
+        List<Estoque> itensEncontrados = new ArrayList<>();
+        String sql = "SELECT e.id, e.quantidade, e.qtd_minima, e.lote, e.data_validade, " +
+                "p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, "
+                +
+                "a.id as id_area, a.setor, a.prateleira " +
+                "FROM Estoque e " +
+                "JOIN Produtos p ON e.id_produto = p.id " +
+                "JOIN Areas_estoque a ON e.id_local = a.id " +
+                "WHERE e.quantidade <= e.qtd_minima AND e.qtd_minima > 0 " +
+                "ORDER BY e.quantidade ASC";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Produto produto = new Produto(rs.getInt("id_produto"), rs.getString("nome"), rs.getString("descricao"),
+                        rs.getString("fabricante"), rs.getString("categoria"), rs.getString("tarja"),
+                        rs.getBigDecimal("preco"), rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
+                AreaEstoque area = new AreaEstoque(rs.getInt("id_area"), rs.getString("setor"),
+                        rs.getString("prateleira"));
+                Estoque itemEstoque = new Estoque(rs.getInt("id"), rs.getInt("quantidade"), rs.getInt("qtd_minima"),
+                        rs.getString("lote"), rs.getDate("data_validade").toLocalDate(), produto, area);
+                itensEncontrados.add(itemEstoque);
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar produtos com estoque baixo: " + e.getMessage());
+        }
+        return itensEncontrados;
+    }
+
+    public List<Estoque> buscarProdutosProximosDoVencimento(int dias) {
+        List<Estoque> itensEncontrados = new ArrayList<>();
+        String sql = "SELECT e.id, e.quantidade, e.qtd_minima, e.lote, e.data_validade, " +
+                "p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, "
+                +
+                "a.id as id_area, a.setor, a.prateleira " +
+                "FROM Estoque e " +
+                "JOIN Produtos p ON e.id_produto = p.id " +
+                "JOIN Areas_estoque a ON e.id_local = a.id " +
+                "WHERE e.data_validade BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY) " +
+                "ORDER BY e.data_validade ASC";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, dias);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Produto produto = new Produto(rs.getInt("id_produto"), rs.getString("nome"),
+                            rs.getString("descricao"), rs.getString("fabricante"), rs.getString("categoria"),
+                            rs.getString("tarja"), rs.getBigDecimal("preco"),
+                            rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
+                    AreaEstoque area = new AreaEstoque(rs.getInt("id_area"), rs.getString("setor"),
+                            rs.getString("prateleira"));
+                    Estoque itemEstoque = new Estoque(rs.getInt("id"), rs.getInt("quantidade"), rs.getInt("qtd_minima"),
+                            rs.getString("lote"), rs.getDate("data_validade").toLocalDate(), produto, area);
+                    itensEncontrados.add(itemEstoque);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar produtos proximos do vencimento: " + e.getMessage());
+        }
+        return itensEncontrados;
+    }
+
+    public boolean adicionarLoteDeEstoque(int idProduto, int quantidade, String lote, LocalDate dataValidade,
+            int idArea, int qtdMinima, Funcionario executor) {
         if (!controleAcesso.temPermissao(executor.getMatricula(), "atualizar_estoque")) {
             System.err.println("ACESSO NEGADO: " + executor.getNome() + " nao tem permissao para adicionar estoque");
             return false;
         }
 
-        String sql = "INSERT INTO Estoque (id_produto, id_local, quantidade, lote, data_fabricacao, data_validade, precoVenda) " +
-                     "VALUES (?, ?, ?, ?, CURDATE(), ?, (SELECT preco FROM Produtos WHERE id = ?))";
+        String sql = "INSERT INTO Estoque (id_produto, id_local, quantidade, qtd_minima, lote, data_fabricacao, data_validade, precoVenda) "
+                +
+                "VALUES (?, ?, ?, ?, ?, CURDATE(), ?, (SELECT preco FROM Produtos WHERE id = ?))";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setInt(1, idProduto);
             stmt.setInt(2, idArea);
             stmt.setInt(3, quantidade);
-            stmt.setString(4, lote);
-            stmt.setDate(5, java.sql.Date.valueOf(dataValidade));
-            stmt.setInt(6, idProduto);
+            stmt.setInt(4, qtdMinima);
+            stmt.setString(5, lote);
+            stmt.setDate(6, java.sql.Date.valueOf(dataValidade));
+            stmt.setInt(7, idProduto);
 
             return stmt.executeUpdate() > 0;
 

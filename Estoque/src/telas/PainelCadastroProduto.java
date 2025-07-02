@@ -7,7 +7,6 @@ import java.awt.Insets;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -17,6 +16,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.BorderFactory;
+import java.awt.GridLayout;
 import auxiliares.AreaEstoque;
 import auxiliares.Funcionario;
 import auxiliares.Produto;
@@ -113,16 +113,9 @@ public class PainelCadastroProduto extends JPanel {
 
     private void cadastrarProdutoEEstoque() {
         try {
-            Produto novoProduto = new Produto(
-                    0, // ID sera gerado pelo banco
-                    txtNome.getText(),
-                    txtDescricao.getText(),
-                    txtFabricante.getText(),
-                    (String) comboCategoria.getSelectedItem(),
-                    (String) comboTarja.getSelectedItem(),
-                    new BigDecimal(txtPreco.getText().replace(",", ".")),
-                    checkReceita.isSelected());
-
+            Produto novoProduto = new Produto(0, txtNome.getText(), txtDescricao.getText(), txtFabricante.getText(),
+                    (String) comboCategoria.getSelectedItem(), (String) comboTarja.getSelectedItem(),
+                    new BigDecimal(txtPreco.getText().replace(",", ".")), checkReceita.isSelected());
             long idNovoProduto = gerenciadorProdutos.cadastrarNovoProduto(novoProduto, usuarioLogado);
 
             if (idNovoProduto != -1) {
@@ -133,9 +126,6 @@ public class PainelCadastroProduto extends JPanel {
             } else {
                 JOptionPane.showMessageDialog(this, "Falha ao cadastrar o produto", "Erro", JOptionPane.ERROR_MESSAGE);
             }
-
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Formato do preco invalido", "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Erro inesperado: " + ex.getMessage(), "Erro",
                     JOptionPane.ERROR_MESSAGE);
@@ -144,15 +134,18 @@ public class PainelCadastroProduto extends JPanel {
 
     private void solicitarDadosDoLote(long idProduto) {
         JTextField qtdField = new JTextField(5);
+        JTextField qtdMinimaField = new JTextField(5);
         JTextField loteField = new JTextField(10);
         JTextField validadeField = new JTextField(10);
 
         List<AreaEstoque> areas = gerenciadorEstoque.buscarAreasDeEstoque();
         JComboBox<AreaEstoque> comboAreas = new JComboBox<>(areas.toArray(new AreaEstoque[0]));
 
-        JPanel painelLote = new JPanel();
-        painelLote.add(new JLabel("Quantidade:"));
+        JPanel painelLote = new JPanel(new GridLayout(0, 2, 5, 5));
+        painelLote.add(new JLabel("Quantidade Inicial:"));
         painelLote.add(qtdField);
+        painelLote.add(new JLabel("Quantidade Minima:"));
+        painelLote.add(qtdMinimaField);
         painelLote.add(new JLabel("Lote:"));
         painelLote.add(loteField);
         painelLote.add(new JLabel("Validade (dd/MM/yyyy):"));
@@ -165,13 +158,14 @@ public class PainelCadastroProduto extends JPanel {
         if (result == JOptionPane.OK_OPTION) {
             try {
                 int quantidade = Integer.parseInt(qtdField.getText());
+                int qtdMinima = Integer.parseInt(qtdMinimaField.getText());
                 String lote = loteField.getText();
                 LocalDate validade = LocalDate.parse(validadeField.getText(),
                         DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                 AreaEstoque areaSelecionada = (AreaEstoque) comboAreas.getSelectedItem();
 
                 boolean sucesso = gerenciadorEstoque.adicionarLoteDeEstoque((int) idProduto, quantidade, lote, validade,
-                        areaSelecionada.getId(), usuarioLogado);
+                        areaSelecionada.getId(), qtdMinima, usuarioLogado);
 
                 if (sucesso) {
                     JOptionPane.showMessageDialog(this, "Lote de estoque adicionado com sucesso", "Sucesso",
@@ -180,8 +174,7 @@ public class PainelCadastroProduto extends JPanel {
                     JOptionPane.showMessageDialog(this, "Falha ao adicionar lote de estoque", "Erro",
                             JOptionPane.ERROR_MESSAGE);
                 }
-
-            } catch (NumberFormatException | DateTimeParseException ex) {
+            } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Dados do lote invalidos", "Erro de Formato",
                         JOptionPane.ERROR_MESSAGE);
             }

@@ -6,15 +6,17 @@ public class Estoque {
 
     private final int id;
     private final int quantidade;
+    private final int qtdMinima;
     private final String lote;
     private final LocalDate dataValidade;
     private final Produto produto;
     private final AreaEstoque areaEstoque;
 
-    public Estoque(int id, int quantidade, String lote, LocalDate dataValidade, Produto produto,
+    public Estoque(int id, int quantidade, int qtdMinima, String lote, LocalDate dataValidade, Produto produto,
             AreaEstoque areaEstoque) {
         this.id = id;
         this.quantidade = quantidade;
+        this.qtdMinima = qtdMinima;
         this.lote = lote;
         this.dataValidade = dataValidade;
         this.produto = produto;
@@ -27,6 +29,10 @@ public class Estoque {
 
     public int getQuantidade() {
         return quantidade;
+    }
+
+    public int getQtdMinima() {
+        return qtdMinima;
     }
 
     public String getLote() {
