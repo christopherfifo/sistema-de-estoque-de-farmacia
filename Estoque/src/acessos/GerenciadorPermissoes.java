@@ -33,24 +33,26 @@ public class GerenciadorPermissoes {
         carregarPermissoesValidas();
     }
 
-    private static void carregarPermissoesValidas() {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT nome FROM Permissoes");
+private static void carregarPermissoesValidas() {
+    try (Connection conn = DatabaseConnection.getConnection()) {
+        String sql = "SHOW COLUMNS FROM Permissoes WHERE Field NOT IN ('id', 'nome')";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             
             while (rs.next()) {
-                PERMISSOES_VALIDAS.add(rs.getString("nome"));
+                PERMISSOES_VALIDAS.add(rs.getString("Field"));
             }
-            
-            if (PERMISSOES_VALIDAS.isEmpty()) {
-                System.err.println("AVISO: Nenhuma permissão foi carregada do banco de dados.");
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("ERRO FATAL: Falha ao carregar permissões válidas do banco de dados: " + e.getMessage());
-            throw new RuntimeException("Não foi possível inicializar as permissões válidas da aplicação.", e);
         }
+        
+        if (PERMISSOES_VALIDAS.isEmpty()) {
+            System.err.println("AVISO: Nenhuma permissão foi carregada do banco de dados.");
+        }
+        
+    } catch (SQLException e) {
+        System.err.println("ERRO FATAL: Falha ao carregar permissões válidas do banco de dados: " + e.getMessage());
+        throw new RuntimeException("Não foi possível inicializar as permissões válidas da aplicação.", e);
     }
+}
 
     public GerenciadorPermissoes() {
         this.controleAcesso = new ControleAcesso();
