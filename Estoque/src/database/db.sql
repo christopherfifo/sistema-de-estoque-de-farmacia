@@ -179,8 +179,6 @@ ALTER TABLE Pedidos ADD COLUMN sub_total DECIMAL(12,2) AFTER valorTotal;
 
 -- inserts
 
--- Corrija a linha 178 do seu arquivo SQL:
-
 INSERT INTO Permissoes (
     nome,
     cadastrar_funcionarios,
