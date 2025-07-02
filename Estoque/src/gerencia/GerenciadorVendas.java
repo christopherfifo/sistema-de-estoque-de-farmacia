@@ -12,6 +12,7 @@ import java.util.List;
 import acessos.ControleAcesso;
 import auxiliares.Funcionario;
 import auxiliares.ItemCarrinho;
+import auxiliares.Pedido;
 import conex.DatabaseConnection;
 
 public class GerenciadorVendas {
@@ -23,7 +24,8 @@ public class GerenciadorVendas {
     }
 
     /**
-     * Finaliza uma venda, registrando o pedido, seus itens, e dando baixa no estoque de forma transacional
+     * Finaliza uma venda, registrando o pedido, seus itens, e dando baixa no
+     * estoque de forma transacional
      */
     public long finalizarVenda(Carrinho carrinho, Funcionario executor, String formaPagamento) {
         if (!controleAcesso.temPermissao(executor.getMatricula(), "finalizar_venda")) {
@@ -64,7 +66,7 @@ public class GerenciadorVendas {
             String sqlBaixaEstoque = "UPDATE Estoque SET quantidade = quantidade - ? WHERE id = ? AND quantidade >= ?";
 
             try (PreparedStatement stmtItem = conn.prepareStatement(sqlItemPedido);
-                 PreparedStatement stmtEstoque = conn.prepareStatement(sqlBaixaEstoque)) {
+                    PreparedStatement stmtEstoque = conn.prepareStatement(sqlBaixaEstoque)) {
 
                 for (ItemCarrinho item : carrinho.getItens()) {
                     stmtEstoque.setInt(1, item.getQuantidadeComprar());
@@ -73,7 +75,8 @@ public class GerenciadorVendas {
                     int linhasAfetadas = stmtEstoque.executeUpdate();
 
                     if (linhasAfetadas == 0) {
-                        throw new SQLException("Estoque insuficiente para o produto: " + item.getItemEstoque().getProduto().getNome());
+                        throw new SQLException(
+                                "Estoque insuficiente para o produto: " + item.getItemEstoque().getProduto().getNome());
                     }
 
                     stmtItem.setLong(1, idPedido);
@@ -114,7 +117,8 @@ public class GerenciadorVendas {
     }
 
     /**
-     * Cancela uma venda existente, revertendo o estoque e marcando o pedido como devolvido de forma transacional
+     * Cancela uma venda existente, revertendo o estoque e marcando o pedido como
+     * devolvido de forma transacional
      */
     public boolean cancelarVenda(long idPedido, Funcionario executor) {
         if (!controleAcesso.temPermissao(executor.getMatricula(), "autorizar_reembolso")) {
@@ -126,9 +130,10 @@ public class GerenciadorVendas {
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
-            
+
             // Verificar se o pedido ja foi cancelado
-            try (PreparedStatement stmtVerifica = conn.prepareStatement("SELECT dtDevolucao FROM Pedidos WHERE id = ?")) {
+            try (PreparedStatement stmtVerifica = conn
+                    .prepareStatement("SELECT dtDevolucao FROM Pedidos WHERE id = ?")) {
                 stmtVerifica.setLong(1, idPedido);
                 try (ResultSet rs = stmtVerifica.executeQuery()) {
                     if (rs.next() && rs.getTimestamp("dtDevolucao") != null) {
@@ -143,13 +148,13 @@ public class GerenciadorVendas {
             try (PreparedStatement stmtBusca = conn.prepareStatement(sqlBuscaItens)) {
                 stmtBusca.setLong(1, idPedido);
                 try (ResultSet rs = stmtBusca.executeQuery()) {
-                    while(rs.next()) {
-                        itensParaDevolver.add(new int[]{rs.getInt("id_estoque"), rs.getInt("quantidade")});
+                    while (rs.next()) {
+                        itensParaDevolver.add(new int[] { rs.getInt("id_estoque"), rs.getInt("quantidade") });
                     }
                 }
             }
 
-            if(itensParaDevolver.isEmpty()){
+            if (itensParaDevolver.isEmpty()) {
                 throw new SQLException("Pedido com ID " + idPedido + " nao encontrado ou nao possui itens");
             }
 
@@ -172,7 +177,7 @@ public class GerenciadorVendas {
                 stmtCancela.setLong(3, idPedido);
                 stmtCancela.executeUpdate();
             }
-            
+
             conn.commit();
             return true;
 
@@ -183,7 +188,8 @@ public class GerenciadorVendas {
                     conn.rollback();
                     System.err.println("Transacao de cancelamento revertida");
                 } catch (SQLException ex) {
-                    System.err.println("ERRO CRITICO: Falha ao reverter a transacao de cancelamento " + ex.getMessage());
+                    System.err
+                            .println("ERRO CRITICO: Falha ao reverter a transacao de cancelamento " + ex.getMessage());
                 }
             }
             return false;
@@ -197,5 +203,33 @@ public class GerenciadorVendas {
                 }
             }
         }
+    }
+
+    /**
+     * Busca os ultimos pedidos registrados no sistema
+     */
+    public List<Pedido> buscarUltimosPedidos(int limite) {
+        List<Pedido> pedidos = new ArrayList<>();
+        String sql = "SELECT id, dtPedido, valorTotal, forma_pagamento, dtDevolucao FROM Pedidos ORDER BY dtPedido DESC LIMIT ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, limite);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    pedidos.add(new Pedido(
+                            rs.getLong("id"),
+                            rs.getTimestamp("dtPedido").toLocalDateTime(),
+                            rs.getBigDecimal("valorTotal"),
+                            rs.getString("forma_pagamento"),
+                            rs.getTimestamp("dtDevolucao") != null));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar historico de pedidos: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return pedidos;
     }
 }
