@@ -10,6 +10,7 @@ import auxiliares.Funcionario;
 import gerencia.Carrinho;
 import gerencia.GerenciadorEstoque;
 import gerencia.GerenciadorVendas;
+import gerencia.GeradorDeRecibos;
 
 public class PainelVenda extends JPanel {
 
@@ -69,7 +70,7 @@ public class PainelVenda extends JPanel {
         lblTotal = new JLabel("Total: R$ 0.00");
         lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 18));
         JButton btnFinalizarVenda = new JButton("Finalizar Venda");
-        JButton btnCancelarVenda = new JButton("Cancelar Venda Anterior"); // Botao novo
+        JButton btnCancelarVenda = new JButton("Cancelar Venda Anterior");
 
         painelBotoesAcao.add(btnCancelarVenda);
         painelBotoesAcao.add(btnFinalizarVenda);
@@ -171,15 +172,30 @@ public class PainelVenda extends JPanel {
         long idVenda = gerenciadorVendas.finalizarVenda(carrinho, usuarioLogado, formaPagamento);
 
         if (idVenda != -1) {
-            JOptionPane.showMessageDialog(this, "Venda finalizada com sucesso ID do Pedido: " + idVenda, "Sucesso",
-                    JOptionPane.INFORMATION_MESSAGE);
             carrinho.limpar();
             atualizarTabelaCarrinho();
             buscarItens();
+
+            // Gerar e exibir o recibo
+            GeradorDeRecibos gerador = new GeradorDeRecibos();
+            String recibo = gerador.gerarReciboVenda(idVenda);
+            exibirRecibo(recibo);
+
         } else {
             JOptionPane.showMessageDialog(this, "Falha ao finalizar a venda Verifique o console", "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void exibirRecibo(String textoRecibo) {
+        JTextArea areaTexto = new JTextArea(textoRecibo);
+        areaTexto.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        areaTexto.setEditable(false);
+
+        JScrollPane scrollPane = new JScrollPane(areaTexto);
+        scrollPane.setPreferredSize(new Dimension(400, 450));
+
+        JOptionPane.showMessageDialog(this, scrollPane, "Recibo da Venda", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void cancelarVendaAnterior() {
