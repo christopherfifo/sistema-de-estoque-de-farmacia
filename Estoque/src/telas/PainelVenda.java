@@ -65,11 +65,17 @@ public class PainelVenda extends JPanel {
         painelCarrinho.add(new JScrollPane(tabelaCarrinho), BorderLayout.CENTER);
 
         JPanel painelSulCarrinho = new JPanel(new BorderLayout());
+        JPanel painelBotoesAcao = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         lblTotal = new JLabel("Total: R$ 0.00");
         lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 18));
         JButton btnFinalizarVenda = new JButton("Finalizar Venda");
+        JButton btnCancelarVenda = new JButton("Cancelar Venda Anterior"); // Botao novo
+
+        painelBotoesAcao.add(btnCancelarVenda);
+        painelBotoesAcao.add(btnFinalizarVenda);
+
         painelSulCarrinho.add(lblTotal, BorderLayout.WEST);
-        painelSulCarrinho.add(btnFinalizarVenda, BorderLayout.EAST);
+        painelSulCarrinho.add(painelBotoesAcao, BorderLayout.EAST);
         painelCarrinho.add(painelSulCarrinho, BorderLayout.SOUTH);
 
         add(painelCarrinho);
@@ -77,6 +83,7 @@ public class PainelVenda extends JPanel {
         btnBuscar.addActionListener(e -> buscarItens());
         btnAdicionarCarrinho.addActionListener(e -> adicionarAoCarrinho());
         btnFinalizarVenda.addActionListener(e -> finalizarVenda());
+        btnCancelarVenda.addActionListener(e -> cancelarVendaAnterior());
     }
 
     public void buscarItens() {
@@ -101,7 +108,6 @@ public class PainelVenda extends JPanel {
         }
 
         int idEstoque = (int) modeloTabelaBusca.getValueAt(linhaSelecionada, 0);
-
         boolean exigeReceita = gerenciadorEstoque.produtoExigeReceita(idEstoque);
 
         if (exigeReceita) {
@@ -112,13 +118,11 @@ public class PainelVenda extends JPanel {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
             int resposta = JOptionPane.showConfirmDialog(this,
                     "Este produto exige receita\nA receita foi apresentada e validada?", "Validacao de Receita",
                     JOptionPane.YES_NO_OPTION);
-            if (resposta != JOptionPane.YES_OPTION) {
+            if (resposta != JOptionPane.YES_OPTION)
                 return;
-            }
         }
 
         Estoque itemSelecionado = gerenciadorEstoque.buscarItemEstoquePorId(idEstoque, usuarioLogado);
@@ -161,9 +165,8 @@ public class PainelVenda extends JPanel {
         String formaPagamento = (String) JOptionPane.showInputDialog(this, "Selecione a forma de pagamento",
                 "Pagamento", JOptionPane.QUESTION_MESSAGE, null, formasPagamento, formasPagamento[0]);
 
-        if (formaPagamento == null) {
+        if (formaPagamento == null)
             return;
-        }
 
         long idVenda = gerenciadorVendas.finalizarVenda(carrinho, usuarioLogado, formaPagamento);
 
@@ -176,6 +179,31 @@ public class PainelVenda extends JPanel {
         } else {
             JOptionPane.showMessageDialog(this, "Falha ao finalizar a venda Verifique o console", "Erro",
                     JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void cancelarVendaAnterior() {
+        String idPedidoStr = JOptionPane.showInputDialog(this, "Digite o ID do pedido a ser cancelado:",
+                "Cancelar Venda", JOptionPane.PLAIN_MESSAGE);
+        if (idPedidoStr == null || idPedidoStr.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            long idPedido = Long.parseLong(idPedidoStr);
+            boolean sucesso = gerenciadorVendas.cancelarVenda(idPedido, usuarioLogado);
+
+            if (sucesso) {
+                JOptionPane.showMessageDialog(this,
+                        "Pedido " + idPedido + " cancelado com sucesso\nO estoque foi atualizado", "Sucesso",
+                        JOptionPane.INFORMATION_MESSAGE);
+                buscarItens();
+            } else {
+                JOptionPane.showMessageDialog(this, "Falha ao cancelar o pedido Verifique o ID e suas permissoes",
+                        "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "ID do pedido invalido", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
