@@ -25,10 +25,6 @@ public class GerenciadorVendas {
         this.controleAcesso = new ControleAcesso();
     }
 
-    /**
-     * Finaliza uma venda, registrando o pedido, seus itens, receitas e baixando o
-     * estoque de forma transacional
-     */
     public long finalizarVenda(Carrinho carrinho, Funcionario executor, String formaPagamento, List<Receita> receitas,
             List<Profissional> profissionais) {
         if (!controleAcesso.temPermissao(executor.getMatricula(), "finalizar_venda")) {
@@ -127,10 +123,6 @@ public class GerenciadorVendas {
         }
     }
 
-    /**
-     * Cancela uma venda existente, revertendo o estoque e marcando o pedido como
-     * devolvido de forma transacional
-     */
     public boolean cancelarVenda(long idPedido, Funcionario executor) {
         if (!controleAcesso.temPermissao(executor.getMatricula(), "autorizar_reembolso")) {
             System.err.println("ACESSO NEGADO: " + executor.getNome() + " nao tem permissao para cancelar vendas");
@@ -216,9 +208,6 @@ public class GerenciadorVendas {
         }
     }
 
-    /**
-     * Busca os ultimos pedidos registrados no sistema
-     */
     public List<Pedido> buscarUltimosPedidos(int limite) {
         List<Pedido> pedidos = new ArrayList<>();
         String sql = "SELECT id, dtPedido, valorTotal, forma_pagamento, dtDevolucao FROM Pedidos ORDER BY dtPedido DESC LIMIT ?";

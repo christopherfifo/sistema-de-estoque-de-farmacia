@@ -10,9 +10,6 @@ import auxiliares.Funcionario;
 import auxiliares.Produto;
 import conex.DatabaseConnection;
 
-/**
- * Gerencia o cadastro e a logica de negocio relacionada ao catalogo de produtos
- */
 public class GerenciadorProdutos {
     
     private final ControleAcesso controleAcesso;

@@ -3,6 +3,7 @@ package telas;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import auxiliares.Estoque;
 import auxiliares.Funcionario;
@@ -31,7 +32,8 @@ public class PainelGerenciarEstoque extends JPanel {
         painelBusca.add(btnBuscar);
         add(painelBusca, BorderLayout.NORTH);
 
-        String[] colunas = { "ID Estoque", "Nome", "Local", "Quantidade" };
+        String[] colunas = { "ID", "Produto", "Lote", "Qtd", "Qtd. Min", "Preco Venda", "Fabricacao", "Vencimento",
+                "Local" };
         modeloTabela = new DefaultTableModel(colunas, 0);
         tabelaEstoque = new JTable(modeloTabela);
         add(new JScrollPane(tabelaEstoque), BorderLayout.CENTER);
@@ -53,13 +55,19 @@ public class PainelGerenciarEstoque extends JPanel {
         List<Estoque> itens = gerenciadorEstoque.buscarItensEstoque(nomeBusca, usuarioLogado);
 
         modeloTabela.setRowCount(0);
+        DateTimeFormatter formatadorData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         for (Estoque item : itens) {
             modeloTabela.addRow(new Object[] {
                     item.getId(),
                     item.getProduto().getNome(),
-                    item.getAreaEstoque().toString(),
-                    item.getQuantidade()
+                    item.getLote(),
+                    item.getQuantidade(),
+                    item.getQtdMinima(),
+                    String.format("%.2f", item.getPrecoVenda()),
+                    item.getDataFabricacao().format(formatadorData),
+                    item.getDataValidade().format(formatadorData),
+                    item.getAreaEstoque().toString()
             });
         }
     }

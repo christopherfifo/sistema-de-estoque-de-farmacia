@@ -10,9 +10,6 @@ import auxiliares.Receita;
 
 public class GerenciadorReceitas {
 
-    /**
-     * Cadastra a receita e o profissional associado de forma transacional
-     */
     public boolean cadastrarReceitaEProfissional(Connection conn, Receita receita, Profissional profissional)
             throws SQLException {
 

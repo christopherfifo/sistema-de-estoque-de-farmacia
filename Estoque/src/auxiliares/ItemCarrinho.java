@@ -2,9 +2,6 @@ package auxiliares;
 
 import java.math.BigDecimal;
 
-/**
- * Representa um unico item dentro do carrinho de compras
- */
 public class ItemCarrinho {
     private Estoque itemEstoque;
     private int quantidadeComprar;

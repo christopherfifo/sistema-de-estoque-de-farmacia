@@ -317,12 +317,8 @@ public class GerenciadorFuncionarios {
         }
     }
 
-    /**
-     * Busca todos os funcionarios ativos, exceto o proprio executor
-     */
     public List<Funcionario> buscarTodosFuncionarios(Funcionario executor) {
         List<Funcionario> funcionarios = new ArrayList<>();
-        // A permissao para ver outros funcionarios pode ser a mesma de cadastrar
         if (!controleAcesso.temPermissao(executor.getMatricula(), "cadastrar_funcionarios")) {
             return funcionarios;
         }

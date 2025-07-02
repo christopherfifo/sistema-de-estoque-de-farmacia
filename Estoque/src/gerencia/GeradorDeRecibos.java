@@ -10,9 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import conex.DatabaseConnection;
 
-/**
- * Gera recibos para vendas
- */
 public class GeradorDeRecibos {
 
     public String gerarReciboVenda(long idPedido) {

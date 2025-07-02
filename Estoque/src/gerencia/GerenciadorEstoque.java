@@ -1,8 +1,10 @@
+
 package gerencia;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,24 @@ public class GerenciadorEstoque {
         this.controleAcesso = new ControleAcesso();
     }
 
+    private Estoque criarEstoqueDoResultSet(ResultSet rs) throws SQLException {
+        Produto produto = new Produto(rs.getInt("id_produto"), rs.getString("nome"), rs.getString("descricao"),
+                rs.getString("fabricante"), rs.getString("categoria"), rs.getString("tarja"), rs.getBigDecimal("preco"),
+                rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
+        AreaEstoque area = new AreaEstoque(rs.getInt("id_area"), rs.getString("setor"), rs.getString("prateleira"));
+
+        return new Estoque(
+                rs.getInt("id"),
+                rs.getInt("quantidade"),
+                rs.getInt("qtd_minima"),
+                rs.getString("lote"),
+                rs.getDate("data_fabricacao").toLocalDate(),
+                rs.getDate("data_validade").toLocalDate(),
+                rs.getBigDecimal("precoVenda"),
+                produto,
+                area);
+    }
+
     public List<Estoque> buscarItensEstoque(String nomeProduto, Funcionario executor) {
         if (!controleAcesso.temPermissao(executor.getMatricula(), "consultar_estoque")) {
             System.err.println("ACESSO NEGADO: " + executor.getNome() + " nao tem permissao para consultar o estoque");
@@ -28,11 +48,8 @@ public class GerenciadorEstoque {
         }
 
         List<Estoque> itensEncontrados = new ArrayList<>();
-
-        String sql = "SELECT e.id, e.quantidade, e.qtd_minima, e.lote, e.data_validade, " +
-                "p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, "
+        String sql = "SELECT e.*, p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, a.id as id_area, a.setor, a.prateleira "
                 +
-                "a.id as id_area, a.setor, a.prateleira " +
                 "FROM Estoque e " +
                 "JOIN Produtos p ON e.id_produto = p.id " +
                 "JOIN Areas_estoque a ON e.id_local = a.id " +
@@ -42,25 +59,14 @@ public class GerenciadorEstoque {
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, "%" + nomeProduto + "%");
-
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Produto produto = new Produto(rs.getInt("id_produto"), rs.getString("nome"),
-                            rs.getString("descricao"), rs.getString("fabricante"), rs.getString("categoria"),
-                            rs.getString("tarja"), rs.getBigDecimal("preco"),
-                            rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
-                    AreaEstoque area = new AreaEstoque(rs.getInt("id_area"), rs.getString("setor"),
-                            rs.getString("prateleira"));
-                    Estoque itemEstoque = new Estoque(rs.getInt("id"), rs.getInt("quantidade"), rs.getInt("qtd_minima"),
-                            rs.getString("lote"), rs.getDate("data_validade").toLocalDate(), produto, area);
-                    itensEncontrados.add(itemEstoque);
+                    itensEncontrados.add(criarEstoqueDoResultSet(rs));
                 }
             }
         } catch (Exception e) {
             System.err.println("Erro ao buscar itens de estoque: " + e.getMessage());
-            e.printStackTrace();
         }
-
         return itensEncontrados;
     }
 
@@ -70,10 +76,8 @@ public class GerenciadorEstoque {
             return null;
         }
 
-        String sql = "SELECT e.id, e.quantidade, e.qtd_minima, e.lote, e.data_validade, " +
-                "p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, "
+        String sql = "SELECT e.*, p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, a.id as id_area, a.setor, a.prateleira "
                 +
-                "a.id as id_area, a.setor, a.prateleira " +
                 "FROM Estoque e " +
                 "JOIN Produtos p ON e.id_produto = p.id " +
                 "JOIN Areas_estoque a ON e.id_local = a.id " +
@@ -83,24 +87,14 @@ public class GerenciadorEstoque {
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, idEstoque);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Produto produto = new Produto(rs.getInt("id_produto"), rs.getString("nome"),
-                            rs.getString("descricao"), rs.getString("fabricante"), rs.getString("categoria"),
-                            rs.getString("tarja"), rs.getBigDecimal("preco"),
-                            rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
-                    AreaEstoque area = new AreaEstoque(rs.getInt("id_area"), rs.getString("setor"),
-                            rs.getString("prateleira"));
-                    return new Estoque(rs.getInt("id"), rs.getInt("quantidade"), rs.getInt("qtd_minima"),
-                            rs.getString("lote"), rs.getDate("data_validade").toLocalDate(), produto, area);
+                    return criarEstoqueDoResultSet(rs);
                 }
             }
         } catch (Exception e) {
             System.err.println("Erro ao buscar item de estoque por ID: " + e.getMessage());
-            e.printStackTrace();
         }
-
         return null;
     }
 
@@ -193,10 +187,8 @@ public class GerenciadorEstoque {
 
     public List<Estoque> buscarProdutosComEstoqueBaixo() {
         List<Estoque> itensEncontrados = new ArrayList<>();
-        String sql = "SELECT e.id, e.quantidade, e.qtd_minima, e.lote, e.data_validade, " +
-                "p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, "
+        String sql = "SELECT e.*, p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, a.id as id_area, a.setor, a.prateleira "
                 +
-                "a.id as id_area, a.setor, a.prateleira " +
                 "FROM Estoque e " +
                 "JOIN Produtos p ON e.id_produto = p.id " +
                 "JOIN Areas_estoque a ON e.id_local = a.id " +
@@ -208,14 +200,7 @@ public class GerenciadorEstoque {
                 ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                Produto produto = new Produto(rs.getInt("id_produto"), rs.getString("nome"), rs.getString("descricao"),
-                        rs.getString("fabricante"), rs.getString("categoria"), rs.getString("tarja"),
-                        rs.getBigDecimal("preco"), rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
-                AreaEstoque area = new AreaEstoque(rs.getInt("id_area"), rs.getString("setor"),
-                        rs.getString("prateleira"));
-                Estoque itemEstoque = new Estoque(rs.getInt("id"), rs.getInt("quantidade"), rs.getInt("qtd_minima"),
-                        rs.getString("lote"), rs.getDate("data_validade").toLocalDate(), produto, area);
-                itensEncontrados.add(itemEstoque);
+                itensEncontrados.add(criarEstoqueDoResultSet(rs));
             }
         } catch (Exception e) {
             System.err.println("Erro ao buscar produtos com estoque baixo: " + e.getMessage());
@@ -225,10 +210,8 @@ public class GerenciadorEstoque {
 
     public List<Estoque> buscarProdutosProximosDoVencimento(int dias) {
         List<Estoque> itensEncontrados = new ArrayList<>();
-        String sql = "SELECT e.id, e.quantidade, e.qtd_minima, e.lote, e.data_validade, " +
-                "p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, "
+        String sql = "SELECT e.*, p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria, a.id as id_area, a.setor, a.prateleira "
                 +
-                "a.id as id_area, a.setor, a.prateleira " +
                 "FROM Estoque e " +
                 "JOIN Produtos p ON e.id_produto = p.id " +
                 "JOIN Areas_estoque a ON e.id_local = a.id " +
@@ -241,15 +224,7 @@ public class GerenciadorEstoque {
             stmt.setInt(1, dias);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Produto produto = new Produto(rs.getInt("id_produto"), rs.getString("nome"),
-                            rs.getString("descricao"), rs.getString("fabricante"), rs.getString("categoria"),
-                            rs.getString("tarja"), rs.getBigDecimal("preco"),
-                            rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
-                    AreaEstoque area = new AreaEstoque(rs.getInt("id_area"), rs.getString("setor"),
-                            rs.getString("prateleira"));
-                    Estoque itemEstoque = new Estoque(rs.getInt("id"), rs.getInt("quantidade"), rs.getInt("qtd_minima"),
-                            rs.getString("lote"), rs.getDate("data_validade").toLocalDate(), produto, area);
-                    itensEncontrados.add(itemEstoque);
+                    itensEncontrados.add(criarEstoqueDoResultSet(rs));
                 }
             }
         } catch (Exception e) {
