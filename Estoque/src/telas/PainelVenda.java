@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import acessos.ControleAcesso;
 import auxiliares.Estoque;
 import auxiliares.Funcionario;
 import gerencia.Carrinho;
@@ -16,6 +17,7 @@ public class PainelVenda extends JPanel {
     private final GerenciadorEstoque gerenciadorEstoque;
     private final GerenciadorVendas gerenciadorVendas;
     private final Carrinho carrinho;
+    private final ControleAcesso controleAcesso;
 
     private JTable tabelaBusca;
     private DefaultTableModel modeloTabelaBusca;
@@ -29,6 +31,7 @@ public class PainelVenda extends JPanel {
         this.gerenciadorEstoque = new GerenciadorEstoque();
         this.gerenciadorVendas = new GerenciadorVendas();
         this.carrinho = new Carrinho();
+        this.controleAcesso = new ControleAcesso();
 
         setLayout(new GridLayout(2, 1, 10, 10));
 
@@ -99,8 +102,26 @@ public class PainelVenda extends JPanel {
 
         int idEstoque = (int) modeloTabelaBusca.getValueAt(linhaSelecionada, 0);
 
-        Estoque itemSelecionado = gerenciadorEstoque.buscarItemEstoquePorId(idEstoque, usuarioLogado);
+        boolean exigeReceita = gerenciadorEstoque.produtoExigeReceita(idEstoque);
 
+        if (exigeReceita) {
+            boolean temPermissao = controleAcesso.temPermissao(usuarioLogado.getMatricula(), "analisar_receita");
+            if (!temPermissao) {
+                JOptionPane.showMessageDialog(this,
+                        "ACESSO NEGADO: Voce nao tem permissao para vender itens com receita", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            int resposta = JOptionPane.showConfirmDialog(this,
+                    "Este produto exige receita\nA receita foi apresentada e validada?", "Validacao de Receita",
+                    JOptionPane.YES_NO_OPTION);
+            if (resposta != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+
+        Estoque itemSelecionado = gerenciadorEstoque.buscarItemEstoquePorId(idEstoque, usuarioLogado);
         if (itemSelecionado == null) {
             JOptionPane.showMessageDialog(this, "Produto nao encontrado", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
@@ -127,7 +148,7 @@ public class PainelVenda extends JPanel {
                     item.getSubtotal()
             });
         }
-        lblTotal.setText("Total: R$ " + carrinho.calcularTotal());
+        lblTotal.setText("Total: R$ " + String.format("%.2f", carrinho.calcularTotal()));
     }
 
     private void finalizarVenda() {
