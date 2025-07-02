@@ -1,7 +1,30 @@
-# Sistema de Gerenciamento de Estoque de Farmácia
+
 
 ### Christopher Willians Silva Couto - Gu3054047
 ### Gabriel Vitor Grossi Lourenço - Gu3054446
+
+# Sumário
+
+- [Sumário](#sumário)
+- [Introdução](#introdução)
+- [Requisitos do Projeto](#requisitos-do-projeto)
+- [Banco de Dados](#banco-de-dados)
+  - [Tabela Permissões](#tabela-permissões)
+  - [Tabelas Cargos](#tabelas-cargos)
+  - [Tabela de Funcionários](#tabela-de-funcionários)
+  - [Tabela de Produtos](#tabela-de-produtos)
+  - [Tabela Áreas do Estoque](#tabela-áreas-do-estoque)
+  - [Tabela de Estoque](#tabela-de-estoque)
+    - [Relacionamentos (chaves estrangeiras)](#relacionamentos-chaves-estrangeiras)
+    - [Principais Campos](#principais-campos)
+  - [Tabela de Pedidos](#tabela-de-pedidos)
+  - [Tabela Itens do Pedido](#tabela-itens-do-pedido)
+- [Tabela de Receitas](#tabela-de-receitas)
+  - [Tabela de Profissionais](#tabela-de-profissionais)
+- [Classes e Funções](#classes-e-funções)
+  - [Gerenciador de Permissões](#gerenciador-de-permissões)
+
+---
 
 # Introdução
 
@@ -214,7 +237,7 @@ create table if not EXISTS Estoque(
 );
 ```
 
-A tabela `Estoque` armazena todas as informações relacionadas aos **lotes de produtos** disponíveis na farmácia. Cada registro representa um lote específico, controlando desde a **quantidade** até a **validade**, **localização**, **preços**, **descontos**, **vendas** e **ocorrências**.
+A ***tabela Estoque*** armazena todas as informações relacionadas aos **lotes de produtos** disponíveis na farmácia. Cada registro representa um lote específico, controlando desde a **quantidade** até a **validade**, **localização**, **preços**, **descontos**, **vendas** e **ocorrências**.
 
 ### Relacionamentos (chaves estrangeiras)
 
@@ -272,13 +295,113 @@ CREATE TABLE if not exists Pedidos (
 );
 ```
 
-A tabela `Pedidos` é responsável por armazenar os dados de cada venda ou compra realizada na farmácia. Cada linha representa um pedido completo e contém informações como a data do pedido (`dtPedido`), o valor total (`valorTotal`), a quantidade de itens (`qtdItems`) e o subtotal (`sub_total`), que pode refletir descontos aplicados.
+A ***tabela Pedidos*** é responsável por armazenar os dados de cada venda ou compra realizada na farmácia. Cada linha representa um pedido completo e contém informações como a data do pedido (`dtPedido`), o valor total (`valorTotal`), a quantidade de itens (`qtdItems`) e o subtotal (`sub_total`), que pode refletir descontos aplicados.
 
-Além disso, essa tabela permite controlar detalhes importantes como a forma de pagamento utilizada (`forma_pagamento`) — podendo ser dinheiro, cartão, pix, boleto ou outro — e o número de parcelas (`quantidade_parcelas`) em casos de pagamento a prazo. Também registra o status de devoluções, por meio dos campos `dtDevolucao` e `motivoDevolucao`.
+Além disso, essa tabela permite controlar detalhes importantes como a forma de pagamento utilizada (`forma_pagamento`) e o número de parcelas (`quantidade_parcelas`) em casos de pagamento a prazo. Também registra o status de devoluções, por meio dos campos `dtDevolucao` e `motivoDevolucao`.
 
 Há dois campos específicos para controle de medicamentos com prescrição: `receita` e `receita_especial`, que indicam se o pedido envolveu algum produto que exige apresentação de receita comum ou controlada. Os campos `dtPagamento`, `dtNotaFiscal` e `dtRecebimento` servem para acompanhar o fluxo completo da transação, desde a emissão até o recebimento e registro fiscal, que pode ser descrito em `notaFiscal`.
 
 Por fim, essa tabela se relaciona com outras como `Itens_pedido`, que detalha os produtos envolvidos em cada pedido, e `Receitas`, no caso de vendas com prescrição médica, permitindo o rastreamento completo de operações comerciais e regulamentadas.
+
+## Tabela Itens do Pedido
+
+```sql
+CREATE Table if NOT exists Itens_pedido(
+
+    id int AUTO_INCREMENT PRIMARY KEY,
+
+    id_pedido int not NULL,
+
+    id_estoque int not NULL,
+
+    id_receita int,
+
+    id_produto int not NULL,
+
+    quantidade int not NULL,
+
+    preco_unitario decimal(15,2) NOT NULL,
+
+    sub_total decimal(15,2), -- caso tenha desconto
+
+    Foreign Key (id_produto) REFERENCES Produtos (id),
+
+    FOREIGN KEY (id_pedido) REFERENCES Pedidos(id),
+
+    Foreign Key (id_estoque) REFERENCES Estoque (id)
+
+);
+```
+
+A ***tabela Itens_pedido*** registra os produtos incluídos em cada pedido realizado na farmácia. Cada linha representa um item específico do pedido, ligando-o a um produto (`id_produto`), a um lote do estoque (`id_estoque`) e, se aplicável, a uma receita (`id_receita`). Ela também armazena a quantidade vendida, o preço unitário e o subtotal daquele item, considerando possíveis descontos. 
+
+# Tabela de Receitas
+
+```sql
+CREATE TABLE IF NOT EXISTS Receitas(
+
+    id int AUTO_INCREMENT PRIMARY KEY,
+
+    id_funcionario int NOT NULL,
+
+    id_pedido int NOT NULL,
+
+    tipo ENUM('Receita Azul (Receituário de Controle Especial - Tipo A)', 'Receita Verde (Receituário de Controle Especial - Tipo B)', 'Receita Amarela (Notificação de Receita - Tipo A)', 'Receita Branca Comum (Simples)', 'Receita Branca de Controle Especial (Receituário de Controle Especial)') not null,
+
+    codigo VARCHAR(255) not NULL,
+
+    cpf_paciente VARCHAR(255) NOT NULL,
+
+    nome_paciente VARCHAR(255) NOT NULL,
+
+    data_nascimento DATE NOT NULL,
+
+    data_validade DATE NOT NULL,
+
+    observacoes TEXT,
+
+    data_emissao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_funcionario) REFERENCES Funcionarios(id),
+
+    FOREIGN KEY (id_pedido) REFERENCES Pedidos(id)
+
+);
+```
+
+A ***tabela Receitas*** armazena as informações das prescrições médicas associadas a pedidos de medicamentos que exigem controle. Cada registro inclui dados do funcionário que analisou a receita (`id_funcionario`), o pedido ao qual ela está vinculada (`id_pedido`), o tipo de receita (como azul, branca, amarela, etc.), o paciente (nome, CPF, nascimento) e dados da validade e emissão da receita.
+
+## Tabela de Profissionais
+
+```sql
+CREATE TABLE IF NOT EXISTS Profissional(
+
+    id INT PRIMARY KEY AUTO_INCREMENT,
+
+    id_receita INT NOT NULL,
+
+    nome_profissional VARCHAR(100),
+
+    tipo_registro ENUM('CRM', 'COFEN', 'CRO', 'CRF', 'OUTRO'),
+
+    numero_registro VARCHAR(20),
+
+    uf_registro CHAR(2),
+
+    data_emissao DATE,
+
+    especialidade VARCHAR(100),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_receita) REFERENCES Receitas(id) ON DELETE CASCADE
+
+);
+```
+
+A ***tabela Profissional*** complementa os dados das receitas com informações do profissional de saúde responsável pela prescrição. Ela inclui o nome do profissional, o tipo e número do registro (CRM, COFEN, etc.), estado de emissão, especialidade e a data da emissão do documento. Cada profissional está vinculado a uma receita específica (`id_receita`), e a tabela garante que os dados da prescrição tenham origem em um profissional habilitado, conforme exigências legais.
 # Classes e Funções
 
 ## Gerenciador de Permissões
