@@ -176,6 +176,8 @@ CREATE TABLE IF NOT EXISTS Profissional(
 );
 
 ALTER TABLE Pedidos ADD COLUMN sub_total DECIMAL(12,2) AFTER valorTotal;
+ALTER TABLE Estoque DROP COLUMN fabricante;
+
 
 -- inserts
 
@@ -224,8 +226,6 @@ INSERT INTO Funcionarios (nome, cpf, matricula, email, telefone, senha, tipo, id
 ('Joao Farmaceutico', '333.333.333-33', 'farma', 'farma@farma.com', '11933333333', 'farma123', 'funcionario', 3, 'ativo'),
 ('Jessica Caixa', '444.444.444-44', 'caixa', 'caixa@farma.com', '11944444444', 'caixa123', 'funcionario', 4, 'ativo');
 
-SELECT * from Funcionarios; 
-
 INSERT INTO Produtos (nome, descricao, armazenamento, armazenamento_especial, receita_obrigatoria, fabricante, categoria, tarja, preco) VALUES
 ('Dipirona Sódica 500mg', 'Analgésico e antitérmico. Caixa com 10 comprimidos.', 'Temperatura ambiente', 'nao', 'nao', 'Medley', 'medicamento', 'vermelha', 12.50),
 ('Amoxicilina 500mg', 'Antibiótico. Caixa com 21 cápsulas.', 'Temperatura ambiente', 'nao', 'sim', 'EMS', 'antibiotico', 'vermelha', 35.75),
@@ -239,9 +239,9 @@ INSERT INTO Areas_estoque (setor, andar, tipo_armazenamento, prateleira) VALUES
 ('Controlados', 'Balcão', 'padrao', 'C1-Trancado'),
 ('Refrigerados', 'Depósito', 'refrigerado', 'Geladeira Farma-01');
 
-INSERT INTO Estoque (id_produto, id_local, quantidade, fabricante, lote, data_fabricacao, data_validade, precoVenda) VALUES
-(1, 1, 150, 'Medley', 'LOTE_DIP202401', '2024-01-15', '2026-01-15', 12.50),
-(2, 3, 80, 'EMS', 'LOTE_AMX202403', '2024-03-20', '2025-03-20', 35.75),
-(3, 2, 120, 'Nivea', 'LOTE_PROT202311', '2023-11-01', '2025-11-01', 45.90),
-(4, 2, 200, 'Head & Shoulders', 'LOTE_SHA202405', '2024-05-10', '2027-05-10', 22.00),
-(5, 4, 40, 'Eli Lilly', 'LOTE_INS202406', '2024-06-01', '2025-06-01', 78.30);
+INSERT INTO Estoque (id_produto, id_local, quantidade, lote, data_fabricacao, data_validade, precoVenda) VALUES
+(1, 1, 150, 'LOTE_DIP202401', '2024-01-15', '2026-01-15', 12.50),
+(2, 3, 80, 'LOTE_AMX202403', '2024-03-20', '2025-03-20', 35.75),
+(3, 2, 120, 'LOTE_PROT202311', '2023-11-01', '2025-11-01', 45.90),
+(4, 2, 200, 'LOTE_SHA202405', '2024-05-10', '2027-05-10', 22.00),
+(5, 4, 40, 'LOTE_INS202406', '2024-06-01', '2025-06-01', 78.30);

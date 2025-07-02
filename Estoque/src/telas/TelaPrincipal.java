@@ -12,6 +12,7 @@ public class TelaPrincipal extends JFrame {
     private PainelGerenciarEstoque painelEstoque;
     private PainelVenda painelVenda;
     private PainelHistoricoVendas painelHistorico;
+    private PainelCadastroProduto painelCadastro;
 
     private boolean estoqueJaCarregado = false;
     private boolean vendaJaCarregada = false;
@@ -36,11 +37,13 @@ public class TelaPrincipal extends JFrame {
         this.painelEstoque = new PainelGerenciarEstoque(this.usuarioLogado);
         this.painelVenda = new PainelVenda(this.usuarioLogado);
         this.painelHistorico = new PainelHistoricoVendas();
+        this.painelCadastro = new PainelCadastroProduto(this.usuarioLogado);
 
         painelComAbas.addTab("Inicio", painelBoasVindas);
         painelComAbas.addTab("Ponto de Venda", this.painelVenda);
         painelComAbas.addTab("Gerenciar Estoque", this.painelEstoque);
         painelComAbas.addTab("Historico de Vendas", this.painelHistorico);
+        painelComAbas.addTab("Cadastro de Produtos", this.painelCadastro);
 
         painelComAbas.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {

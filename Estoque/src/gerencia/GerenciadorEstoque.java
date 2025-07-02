@@ -3,6 +3,7 @@ package gerencia;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import acessos.ControleAcesso;
@@ -216,6 +217,37 @@ public class GerenciadorEstoque {
 
         } catch (Exception e) {
             System.err.println("Erro de SQL ao tentar modificar local do estoque: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Adiciona um lote inicial de um produto recem-cadastrado ao estoque
+     */
+    public boolean adicionarLoteDeEstoque(int idProduto, int quantidade, String lote, LocalDate dataValidade, int idArea, Funcionario executor) {
+        if (!controleAcesso.temPermissao(executor.getMatricula(), "atualizar_estoque")) {
+            System.err.println("ACESSO NEGADO: " + executor.getNome() + " nao tem permissao para adicionar estoque");
+            return false;
+        }
+
+        String sql = "INSERT INTO Estoque (id_produto, id_local, quantidade, lote, data_fabricacao, data_validade, precoVenda) " +
+                     "VALUES (?, ?, ?, ?, CURDATE(), ?, (SELECT preco FROM Produtos WHERE id = ?))";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, idProduto);
+            stmt.setInt(2, idArea);
+            stmt.setInt(3, quantidade);
+            stmt.setString(4, lote);
+            stmt.setDate(5, java.sql.Date.valueOf(dataValidade));
+            stmt.setInt(6, idProduto);
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            System.err.println("Erro de SQL ao tentar adicionar lote de estoque: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
