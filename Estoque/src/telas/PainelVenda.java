@@ -8,11 +8,13 @@ import auxiliares.Estoque;
 import auxiliares.Funcionario;
 import gerencia.Carrinho;
 import gerencia.GerenciadorEstoque;
+import gerencia.GerenciadorVendas;
 
 public class PainelVenda extends JPanel {
 
     private final Funcionario usuarioLogado;
     private final GerenciadorEstoque gerenciadorEstoque;
+    private final GerenciadorVendas gerenciadorVendas;
     private final Carrinho carrinho;
 
     private JTable tabelaBusca;
@@ -25,6 +27,7 @@ public class PainelVenda extends JPanel {
     public PainelVenda(Funcionario usuario) {
         this.usuarioLogado = usuario;
         this.gerenciadorEstoque = new GerenciadorEstoque();
+        this.gerenciadorVendas = new GerenciadorVendas();
         this.carrinho = new Carrinho();
 
         setLayout(new GridLayout(2, 1, 10, 10));
@@ -70,12 +73,9 @@ public class PainelVenda extends JPanel {
 
         btnBuscar.addActionListener(e -> buscarItens());
         btnAdicionarCarrinho.addActionListener(e -> adicionarAoCarrinho());
+        btnFinalizarVenda.addActionListener(e -> finalizarVenda());
     }
 
-    /**
-     * Busca itens no estoque com base no texto do campo de busca e atualiza a
-     * tabela
-     */
     public void buscarItens() {
         String nomeProduto = txtBuscaProduto.getText();
         List<Estoque> itens = gerenciadorEstoque.buscarItensEstoque(nomeProduto, usuarioLogado);
@@ -128,5 +128,33 @@ public class PainelVenda extends JPanel {
             });
         }
         lblTotal.setText("Total: R$ " + carrinho.calcularTotal());
+    }
+
+    private void finalizarVenda() {
+        if (carrinho.getItens().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O carrinho esta vazio", "Alerta", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String[] formasPagamento = { "dinheiro", "pix", "cartao_credito", "cartao_debito" };
+        String formaPagamento = (String) JOptionPane.showInputDialog(this, "Selecione a forma de pagamento",
+                "Pagamento", JOptionPane.QUESTION_MESSAGE, null, formasPagamento, formasPagamento[0]);
+
+        if (formaPagamento == null) {
+            return;
+        }
+
+        long idVenda = gerenciadorVendas.finalizarVenda(carrinho, usuarioLogado, formaPagamento);
+
+        if (idVenda != -1) {
+            JOptionPane.showMessageDialog(this, "Venda finalizada com sucesso ID do Pedido: " + idVenda, "Sucesso",
+                    JOptionPane.INFORMATION_MESSAGE);
+            carrinho.limpar();
+            atualizarTabelaCarrinho();
+            buscarItens();
+        } else {
+            JOptionPane.showMessageDialog(this, "Falha ao finalizar a venda Verifique o console", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 }
