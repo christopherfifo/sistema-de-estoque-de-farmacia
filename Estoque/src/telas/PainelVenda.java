@@ -4,10 +4,15 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import acessos.ControleAcesso;
 import auxiliares.Estoque;
 import auxiliares.Funcionario;
+import auxiliares.Profissional;
+import auxiliares.Receita;
 import gerencia.Carrinho;
 import gerencia.GerenciadorEstoque;
 import gerencia.GerenciadorVendas;
@@ -20,6 +25,8 @@ public class PainelVenda extends JPanel {
     private final GerenciadorVendas gerenciadorVendas;
     private final Carrinho carrinho;
     private final ControleAcesso controleAcesso;
+    private final List<Receita> receitasDaVenda;
+    private final List<Profissional> profissionaisDaVenda;
 
     private JTable tabelaBusca;
     private DefaultTableModel modeloTabelaBusca;
@@ -35,6 +42,8 @@ public class PainelVenda extends JPanel {
         this.gerenciadorVendas = new GerenciadorVendas();
         this.carrinho = new Carrinho();
         this.controleAcesso = new ControleAcesso();
+        this.receitasDaVenda = new ArrayList<>();
+        this.profissionaisDaVenda = new ArrayList<>();
 
         setLayout(new GridLayout(2, 1, 10, 10));
 
@@ -132,10 +141,9 @@ public class PainelVenda extends JPanel {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            int resposta = JOptionPane.showConfirmDialog(this,
-                    "Este produto exige receita\nA receita foi apresentada e validada?", "Validacao de Receita",
-                    JOptionPane.YES_NO_OPTION);
-            if (resposta != JOptionPane.YES_OPTION)
+
+            boolean receitaColetada = exibirDialogoColetaReceita();
+            if (!receitaColetada)
                 return;
         }
 
@@ -156,6 +164,66 @@ public class PainelVenda extends JPanel {
         }
     }
 
+    private boolean exibirDialogoColetaReceita() {
+        JTextField nomeProfissional = new JTextField();
+        JComboBox<String> tipoRegistro = new JComboBox<>(new String[] { "CRM", "COFEN", "CRO", "CRF", "OUTRO" });
+        JTextField numeroRegistro = new JTextField();
+        JTextField codigoReceita = new JTextField();
+        JComboBox<String> tipoReceita = new JComboBox<>(new String[] { "Receita Branca Comum (Simples)",
+                "Receita Branca de Controle Especial", "Receita Azul (Tipo A)", "Receita Amarela (Tipo A)" });
+        JTextField cpfPaciente = new JTextField();
+        JTextField nomePaciente = new JTextField();
+        JTextField dataNascPaciente = new JTextField();
+        JTextField dataValidadeReceita = new JTextField();
+
+        JPanel painel = new JPanel(new GridLayout(0, 2, 5, 5));
+        painel.add(new JLabel("Nome do Profissional:"));
+        painel.add(nomeProfissional);
+        painel.add(new JLabel("Tipo de Registro:"));
+        painel.add(tipoRegistro);
+        painel.add(new JLabel("Numero do Registro:"));
+        painel.add(numeroRegistro);
+        painel.add(new JLabel("Codigo da Receita:"));
+        painel.add(codigoReceita);
+        painel.add(new JLabel("Tipo da Receita:"));
+        painel.add(tipoReceita);
+        painel.add(new JLabel("CPF do Paciente:"));
+        painel.add(cpfPaciente);
+        painel.add(new JLabel("Nome do Paciente:"));
+        painel.add(nomePaciente);
+        painel.add(new JLabel("Data Nasc. Paciente (dd/MM/yyyy):"));
+        painel.add(dataNascPaciente);
+        painel.add(new JLabel("Data Validade Receita (dd/MM/yyyy):"));
+        painel.add(dataValidadeReceita);
+
+        int result = JOptionPane.showConfirmDialog(this, painel, "Cadastro de Receita Medica",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                Receita receita = new Receita(
+                        (String) tipoReceita.getSelectedItem(),
+                        codigoReceita.getText(),
+                        cpfPaciente.getText(),
+                        nomePaciente.getText(),
+                        LocalDate.parse(dataNascPaciente.getText(), formatter),
+                        LocalDate.parse(dataValidadeReceita.getText(), formatter));
+                Profissional profissional = new Profissional(
+                        nomeProfissional.getText(),
+                        (String) tipoRegistro.getSelectedItem(),
+                        numeroRegistro.getText());
+                receitasDaVenda.add(receita);
+                profissionaisDaVenda.add(profissional);
+                return true;
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Dados da receita invalidos Verifique as datas", "Erro de Formato",
+                        JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        }
+        return false;
+    }
+
     private void atualizarVisualizacaoCarrinho() {
         modeloTabelaCarrinho.setRowCount(0);
         for (var item : carrinho.getItens()) {
@@ -166,11 +234,9 @@ public class PainelVenda extends JPanel {
                     item.getSubtotal()
             });
         }
-
         String textoDesconto = String.format("Desconto: R$ %.2f (%.2f%%)", carrinho.getValorDesconto(),
                 carrinho.getPercentualDesconto());
         lblDesconto.setText(textoDesconto);
-
         String textoTotal = String.format("Total: R$ %.2f", carrinho.calcularTotal());
         lblTotal.setText(textoTotal);
     }
@@ -188,10 +254,13 @@ public class PainelVenda extends JPanel {
         if (formaPagamento == null)
             return;
 
-        long idVenda = gerenciadorVendas.finalizarVenda(carrinho, usuarioLogado, formaPagamento);
+        long idVenda = gerenciadorVendas.finalizarVenda(carrinho, usuarioLogado, formaPagamento, receitasDaVenda,
+                profissionaisDaVenda);
 
         if (idVenda != -1) {
             carrinho.limpar();
+            receitasDaVenda.clear();
+            profissionaisDaVenda.clear();
             atualizarVisualizacaoCarrinho();
             buscarItens();
 
@@ -209,24 +278,20 @@ public class PainelVenda extends JPanel {
         JTextArea areaTexto = new JTextArea(textoRecibo);
         areaTexto.setFont(new Font("Monospaced", Font.PLAIN, 12));
         areaTexto.setEditable(false);
-
         JScrollPane scrollPane = new JScrollPane(areaTexto);
         scrollPane.setPreferredSize(new Dimension(400, 450));
-
         JOptionPane.showMessageDialog(this, scrollPane, "Recibo da Venda", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void cancelarVendaAnterior() {
         String idPedidoStr = JOptionPane.showInputDialog(this, "Digite o ID do pedido a ser cancelado:",
                 "Cancelar Venda", JOptionPane.PLAIN_MESSAGE);
-        if (idPedidoStr == null || idPedidoStr.trim().isEmpty()) {
+        if (idPedidoStr == null || idPedidoStr.trim().isEmpty())
             return;
-        }
 
         try {
             long idPedido = Long.parseLong(idPedidoStr);
             boolean sucesso = gerenciadorVendas.cancelarVenda(idPedido, usuarioLogado);
-
             if (sucesso) {
                 JOptionPane.showMessageDialog(this,
                         "Pedido " + idPedido + " cancelado com sucesso\nO estoque foi atualizado", "Sucesso",
@@ -247,12 +312,10 @@ public class PainelVenda extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-
         String percStr = JOptionPane.showInputDialog(this, "Digite o percentual de desconto (%):", "Aplicar Desconto",
                 JOptionPane.PLAIN_MESSAGE);
         if (percStr == null)
             return;
-
         try {
             BigDecimal percentual = new BigDecimal(percStr.replace(",", "."));
             carrinho.aplicarDesconto(percentual);

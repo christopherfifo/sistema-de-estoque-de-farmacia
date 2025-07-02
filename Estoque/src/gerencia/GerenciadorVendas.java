@@ -13,6 +13,8 @@ import acessos.ControleAcesso;
 import auxiliares.Funcionario;
 import auxiliares.ItemCarrinho;
 import auxiliares.Pedido;
+import auxiliares.Profissional;
+import auxiliares.Receita;
 import conex.DatabaseConnection;
 
 public class GerenciadorVendas {
@@ -24,21 +26,23 @@ public class GerenciadorVendas {
     }
 
     /**
-     * Finaliza uma venda, registrando o pedido, seus itens, e dando baixa no
+     * Finaliza uma venda, registrando o pedido, seus itens, receitas e baixando o
      * estoque de forma transacional
      */
-    public long finalizarVenda(Carrinho carrinho, Funcionario executor, String formaPagamento) {
+    public long finalizarVenda(Carrinho carrinho, Funcionario executor, String formaPagamento, List<Receita> receitas,
+            List<Profissional> profissionais) {
         if (!controleAcesso.temPermissao(executor.getMatricula(), "finalizar_venda")) {
             System.err.println("ACESSO NEGADO: " + executor.getNome() + " nao tem permissao para finalizar vendas");
             return -1;
         }
-
         if (carrinho.getItens().isEmpty()) {
             System.err.println("ERRO: O carrinho esta vazio");
             return -1;
         }
 
         Connection conn = null;
+        GerenciadorReceitas gerenciadorReceitas = new GerenciadorReceitas();
+
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
@@ -58,9 +62,17 @@ public class GerenciadorVendas {
                     if (rs.next()) {
                         idPedido = rs.getLong(1);
                     } else {
-                        throw new SQLException("Falha ao obter ID do pedido, nenhuma chave gerada");
+                        throw new SQLException("Falha ao obter ID do pedido");
                     }
                 }
+            }
+
+            for (int i = 0; i < receitas.size(); i++) {
+                Receita r = receitas.get(i);
+                Profissional p = profissionais.get(i);
+                r.setIdPedido(idPedido);
+                r.setIdFuncionario(executor.getId());
+                gerenciadorReceitas.cadastrarReceitaEProfissional(conn, r, p);
             }
 
             String sqlItemPedido = "INSERT INTO Itens_pedido (id_pedido, id_estoque, id_produto, quantidade, preco_unitario, sub_total) VALUES (?, ?, ?, ?, ?, ?)";
@@ -73,9 +85,7 @@ public class GerenciadorVendas {
                     stmtEstoque.setInt(1, item.getQuantidadeComprar());
                     stmtEstoque.setInt(2, item.getItemEstoque().getId());
                     stmtEstoque.setInt(3, item.getQuantidadeComprar());
-                    int linhasAfetadas = stmtEstoque.executeUpdate();
-
-                    if (linhasAfetadas == 0) {
+                    if (stmtEstoque.executeUpdate() == 0) {
                         throw new SQLException(
                                 "Estoque insuficiente para o produto: " + item.getItemEstoque().getProduto().getNome());
                     }
