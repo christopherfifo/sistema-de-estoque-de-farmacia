@@ -12,7 +12,7 @@ use Farma_IFSP;
 -- Outras permissões
 CREATE TABLE IF NOT EXISTS Permissoes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) NOT NULL UNIQUE,
+    nome ENUM('Permissao_Farmaceutico', 'Permissao_Gerente', 'Permissao_Admin', 'Permissao_Caixa') NOT NULL,
     cadastrar_funcionarios BOOLEAN NOT NULL DEFAULT FALSE,
     controlar_acesso_funcionarios BOOLEAN NOT NULL DEFAULT FALSE,
     cadastrar_compras BOOLEAN NOT NULL DEFAULT FALSE,
@@ -41,10 +41,10 @@ CREATE TABLE IF NOT EXISTS Permissoes (
 );
 
 CREATE TABLE if not exists Cargos (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nome VARCHAR(50) UNIQUE NOT NULL,
-  id_permissao INT NOT NULL,
-  FOREIGN KEY (id_permissao) REFERENCES Permissoes(id)
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome ENUM('Administrador', 'Caixa', 'Farmaceutico', 'Gerente') NOT NULL,
+    id_permissao INT,
+    FOREIGN KEY (id_permissao) REFERENCES Permissoes(id)
 );
 
 
