@@ -1,3 +1,4 @@
+// Local: Estoque/src/gerencia/GerenciadorEstoque.java
 package gerencia;
 
 import java.sql.Connection;
@@ -5,10 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
 import acessos.ControleAcesso;
 import auxiliares.Funcionario;
 import auxiliares.Produto;
+import auxiliares.Estoque; // Importa a nova classe
 import conex.DatabaseConnection;
 
 public class GerenciadorEstoque {
@@ -19,24 +20,35 @@ public class GerenciadorEstoque {
         this.controleAcesso = new ControleAcesso();
     }
 
-    public List<Produto> buscarProdutoPorNome(String nomeBusca, Funcionario executor) {
+    /**
+     * Busca itens no estoque, juntando dados do Produto e do Estoque.
+     * Retorna uma lista de itens de estoque que correspondem à busca.
+     * Requer permissão de "consultar_estoque".
+     */
+    public List<Estoque> buscarItensEstoque(String nomeProduto, Funcionario executor) {
         if (!controleAcesso.temPermissao(executor.getMatricula(), "consultar_estoque")) {
-            System.err.println("ACESSO NEGADO: " + executor.getNome() + " não tem permissão para consultar o estoque.");
+            System.err.println("ACESSO NEGADO: " + executor.getNome() + " nao tem permissao para consultar o estoque");
             return new ArrayList<>();
         }
 
-        List<Produto> produtosEncontrados = new ArrayList<>();
-        String sql = "SELECT id, nome, descricao, fabricante, categoria, tarja, preco, receita_obrigatoria FROM Produtos WHERE nome LIKE ?";
+        List<Estoque> itensEncontrados = new ArrayList<>();
+
+        String sql = "SELECT e.id, e.quantidade, e.lote, e.data_validade, " +
+                "p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria "
+                +
+                "FROM Estoque e " +
+                "JOIN Produtos p ON e.id_produto = p.id " +
+                "WHERE p.nome LIKE ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, "%" + nomeBusca + "%");
+            stmt.setString(1, "%" + nomeProduto + "%");
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Produto produto = new Produto(
-                            rs.getInt("id"),
+                            rs.getInt("id_produto"),
                             rs.getString("nome"),
                             rs.getString("descricao"),
                             rs.getString("fabricante"),
@@ -44,14 +56,51 @@ public class GerenciadorEstoque {
                             rs.getString("tarja"),
                             rs.getBigDecimal("preco"),
                             rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
-                    produtosEncontrados.add(produto);
+
+                    Estoque itemEstoque = new Estoque(
+                            rs.getInt("id"),
+                            rs.getInt("quantidade"),
+                            rs.getString("lote"),
+                            rs.getDate("data_validade").toLocalDate(),
+                            produto);
+                    itensEncontrados.add(itemEstoque);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Erro ao buscar produtos: " + e.getMessage());
+            System.err.println("Erro ao buscar itens de estoque: " + e.getMessage());
             e.printStackTrace();
         }
 
-        return produtosEncontrados;
+        return itensEncontrados;
+    }
+
+    public boolean modificarQuantidadeEstoque(int idEstoque, int novaQuantidade, Funcionario executor) {
+        if (!controleAcesso.temPermissao(executor.getMatricula(), "atualizar_estoque")) {
+            System.err.println("ACESSO NEGADO: " + executor.getNome() + " nao tem permissao para atualizar o estoque");
+            return false;
+        }
+
+        if (novaQuantidade < 0) {
+            System.err.println("ERRO: A quantidade nao pode ser negativa");
+            return false;
+        }
+
+        String sql = "UPDATE Estoque SET quantidade = ? WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, novaQuantidade);
+            stmt.setInt(2, idEstoque);
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            return linhasAfetadas > 0;
+
+        } catch (Exception e) {
+            System.err.println("Erro ao tentar modificar o estoque: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 }
