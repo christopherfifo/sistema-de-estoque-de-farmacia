@@ -3,6 +3,7 @@ package telas;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import acessos.ControleAcesso;
 import auxiliares.Funcionario;
 import gerencia.GerenciadorFuncionarios;
 import java.awt.*;
@@ -10,14 +11,18 @@ import java.awt.*;
 public class TelaPrincipal extends JFrame {
 
     private final Funcionario usuarioLogado;
+    private final ControleAcesso controleAcesso;
     private PainelDashboard painelDashboard;
     private PainelGerenciarEstoque painelEstoque;
     private PainelVenda painelVenda;
     private PainelHistoricoVendas painelHistorico;
     private PainelCadastroProduto painelCadastro;
+    private PainelGerenciarPermissoes painelPermissoes;
+    private PainelCadastrarFuncionario painelCadastrarFuncionario;
 
     public TelaPrincipal(Funcionario funcionario) {
         this.usuarioLogado = funcionario;
+        this.controleAcesso = new ControleAcesso();
 
         setTitle("Sistema de Farmacia - Usuario: " + usuarioLogado.getNome() + " (" + usuarioLogado.getNomeCargo()
                 + ")");
@@ -30,16 +35,35 @@ public class TelaPrincipal extends JFrame {
         JTabbedPane painelComAbas = new JTabbedPane();
 
         this.painelDashboard = new PainelDashboard();
-        this.painelEstoque = new PainelGerenciarEstoque(this.usuarioLogado);
         this.painelVenda = new PainelVenda(this.usuarioLogado);
+        this.painelEstoque = new PainelGerenciarEstoque(this.usuarioLogado);
         this.painelHistorico = new PainelHistoricoVendas();
-        this.painelCadastro = new PainelCadastroProduto(this.usuarioLogado);
 
-        painelComAbas.addTab("Dashboard", this.painelDashboard);
+        painelComAbas.addTab("Inicio (Dashboard)", this.painelDashboard);
         painelComAbas.addTab("Ponto de Venda", this.painelVenda);
         painelComAbas.addTab("Gerenciar Estoque", this.painelEstoque);
         painelComAbas.addTab("Historico de Vendas", this.painelHistorico);
-        painelComAbas.addTab("Cadastro de Produtos", this.painelCadastro);
+
+        JTabbedPane painelGestao = new JTabbedPane();
+
+        if (controleAcesso.temPermissao(usuarioLogado.getMatricula(), "supervisionar_estoque")) {
+            this.painelCadastro = new PainelCadastroProduto(this.usuarioLogado);
+            painelGestao.addTab("Cadastro de Produtos", this.painelCadastro);
+        }
+
+        if (controleAcesso.temPermissao(usuarioLogado.getMatricula(), "cadastrar_funcionarios")) {
+            this.painelCadastrarFuncionario = new PainelCadastrarFuncionario(this.usuarioLogado);
+            painelGestao.addTab("Cadastro de Funcionarios", this.painelCadastrarFuncionario);
+        }
+
+        if (controleAcesso.temPermissao(usuarioLogado.getMatricula(), "controlar_acesso_funcionarios")) {
+            this.painelPermissoes = new PainelGerenciarPermissoes(this.usuarioLogado);
+            painelGestao.addTab("Gerenciar Permissoes", this.painelPermissoes);
+        }
+
+        if (painelGestao.getTabCount() > 0) {
+            painelComAbas.addTab("Gestao", painelGestao);
+        }
 
         painelComAbas.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -57,9 +81,7 @@ public class TelaPrincipal extends JFrame {
             }
         });
 
-        // Carrega o dashboard inicial ao abrir a tela
         painelDashboard.carregarAlertas();
-
         add(painelComAbas);
     }
 

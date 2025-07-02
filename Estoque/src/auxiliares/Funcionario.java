@@ -19,7 +19,7 @@ public class Funcionario {
     private String nomeCargo;
     private String senha;
 
-    private Funcionario(int id, String nome, String cpf, String matricula, String email, String telefone, String tipo,
+    public Funcionario(int id, String nome, String cpf, String matricula, String email, String telefone, String tipo,
             int idCargo, String nomeCargo) {
         this.id = id;
         this.nome = nome;
@@ -60,7 +60,7 @@ public class Funcionario {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return new Funcionario(
-                            rs.getInt("id"), // Busca o ID
+                            rs.getInt("id"),
                             rs.getString("nome"),
                             rs.getString("cpf"),
                             rs.getString("matricula"),
@@ -87,6 +87,11 @@ public class Funcionario {
         } else {
             System.err.println("Falha ao cadastrar o funcionario '" + this.nome + "'");
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.getNome();
     }
 
     public int getId() {
