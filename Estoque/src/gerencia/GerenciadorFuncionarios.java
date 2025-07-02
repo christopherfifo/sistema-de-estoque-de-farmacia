@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import acessos.ControleAcesso;
 import acessos.GerenciadorPermissoes;
@@ -313,5 +315,45 @@ public class GerenciadorFuncionarios {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Busca todos os funcionarios ativos, exceto o proprio executor
+     */
+    public List<Funcionario> buscarTodosFuncionarios(Funcionario executor) {
+        List<Funcionario> funcionarios = new ArrayList<>();
+        // A permissao para ver outros funcionarios pode ser a mesma de cadastrar
+        if (!controleAcesso.temPermissao(executor.getMatricula(), "cadastrar_funcionarios")) {
+            return funcionarios;
+        }
+
+        String sql = "SELECT f.id, f.nome, f.cpf, f.matricula, f.email, f.telefone, f.tipo, f.id_cargo, c.nome as cargo_nome "
+                +
+                "FROM Funcionarios f " +
+                "JOIN Cargos c ON f.id_cargo = c.id " +
+                "WHERE f.atividade = 'ativo' AND f.matricula != ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, executor.getMatricula());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    funcionarios.add(new Funcionario(
+                            rs.getInt("id"),
+                            rs.getString("nome"),
+                            rs.getString("cpf"),
+                            rs.getString("matricula"),
+                            rs.getString("email"),
+                            rs.getString("telefone"),
+                            rs.getString("tipo"),
+                            rs.getInt("id_cargo"),
+                            rs.getString("cargo_nome")));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return funcionarios;
     }
 }

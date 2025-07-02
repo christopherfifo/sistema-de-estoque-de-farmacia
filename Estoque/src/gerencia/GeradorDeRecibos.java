@@ -17,7 +17,7 @@ public class GeradorDeRecibos {
 
     public String gerarReciboVenda(long idPedido) {
         StringBuilder recibo = new StringBuilder();
-        Locale brLocale = new Locale("pt", "BR");
+        Locale brLocale = Locale.forLanguageTag("pt-BR");
         NumberFormat formatadorMoeda = NumberFormat.getCurrencyInstance(brLocale);
         DateTimeFormatter formatadorData = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 

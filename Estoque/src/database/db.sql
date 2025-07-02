@@ -212,9 +212,9 @@ INSERT INTO Permissoes (
 ('Permissao_Caixa', 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0);
 
 INSERT INTO Cargos ( nome, id_permissao) VALUES
-( 'Administrador', 1),
+( 'Administrador', 3),
 ( 'Gerente', 2),
-( 'Farmaceutico', 3),
+( 'Farmaceutico', 1),
 ( 'Caixa', 4);
 
 INSERT INTO Funcionarios (nome, cpf, matricula, email, telefone, senha, tipo, id_cargo, atividade) VALUES
