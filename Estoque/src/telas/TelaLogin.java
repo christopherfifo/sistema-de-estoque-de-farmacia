@@ -12,7 +12,7 @@ public class TelaLogin extends JFrame {
     private JButton btnLogin;
 
     public TelaLogin() {
-        setTitle("Login - Sistema de Estoque");
+        setTitle("Login - Sistema de Farmacia");
         setSize(350, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -51,19 +51,22 @@ public class TelaLogin extends JFrame {
         String senha = new String(txtSenha.getPassword());
 
         if (matricula.isEmpty() || senha.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Matrícula e senha são obrigatórios.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Matrícula e senha são obrigatórios.", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         Funcionario funcionarioLogado = Funcionario.login(matricula, senha);
 
         if (funcionarioLogado != null) {
-            JOptionPane.showMessageDialog(this, "Bem-vindo, " + funcionarioLogado.getNome() + "!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-            
+            JOptionPane.showMessageDialog(this, "Bem-vindo, " + funcionarioLogado.getNome() + "!", "Sucesso",
+                    JOptionPane.INFORMATION_MESSAGE);
+
             new TelaPrincipal(funcionarioLogado).setVisible(true);
-            this.dispose(); 
+            this.dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Matrícula ou senha inválida.", "Falha no Login", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Matrícula ou senha inválida.", "Falha no Login",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 }

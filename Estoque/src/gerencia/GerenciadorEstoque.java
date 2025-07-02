@@ -103,4 +103,53 @@ public class GerenciadorEstoque {
             return false;
         }
     }
+
+    /**
+     * Busca um unico item de estoque pelo seu ID especifico
+     */
+    public Estoque buscarItemEstoquePorId(int idEstoque, Funcionario executor) {
+        if (!controleAcesso.temPermissao(executor.getMatricula(), "consultar_estoque")) {
+            System.err.println("ACESSO NEGADO: " + executor.getNome() + " nao tem permissao para consultar o estoque");
+            return null;
+        }
+
+        String sql = "SELECT e.id, e.quantidade, e.lote, e.data_validade, " +
+                "p.id as id_produto, p.nome, p.descricao, p.fabricante, p.categoria, p.tarja, p.preco, p.receita_obrigatoria "
+                +
+                "FROM Estoque e " +
+                "JOIN Produtos p ON e.id_produto = p.id " +
+                "WHERE e.id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idEstoque);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Produto produto = new Produto(
+                            rs.getInt("id_produto"),
+                            rs.getString("nome"),
+                            rs.getString("descricao"),
+                            rs.getString("fabricante"),
+                            rs.getString("categoria"),
+                            rs.getString("tarja"),
+                            rs.getBigDecimal("preco"),
+                            rs.getString("receita_obrigatoria").equalsIgnoreCase("sim"));
+
+                    return new Estoque(
+                            rs.getInt("id"),
+                            rs.getInt("quantidade"),
+                            rs.getString("lote"),
+                            rs.getDate("data_validade").toLocalDate(),
+                            produto);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar item de estoque por ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

@@ -1,22 +1,23 @@
 package telas;
 
 import javax.swing.*;
-import java.awt.Font;
-import java.awt.GridBagLayout;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import auxiliares.Funcionario;
+import java.awt.*;
 
 public class TelaPrincipal extends JFrame {
 
-    private Funcionario usuarioLogado;
+    private final Funcionario usuarioLogado;
     private PainelGerenciarEstoque painelEstoque;
+    private PainelVenda painelVenda;
     private boolean estoqueJaCarregado = false;
+    private boolean vendaJaCarregada = false;
 
     public TelaPrincipal(Funcionario funcionario) {
         this.usuarioLogado = funcionario;
 
-        setTitle("Sistema de Estoque - Usuário: " + usuarioLogado.getNome() + " (" + usuarioLogado.getNomeCargo()
+        setTitle("Sistema de Farmacia - Usuario: " + usuarioLogado.getNome() + " (" + usuarioLogado.getNomeCargo()
                 + ")");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -25,22 +26,27 @@ public class TelaPrincipal extends JFrame {
         JTabbedPane painelComAbas = new JTabbedPane();
 
         JPanel painelBoasVindas = new JPanel(new GridBagLayout());
-        JLabel lblMensagem = new JLabel("Selecione uma opção nas abas acima.");
+        JLabel lblMensagem = new JLabel("Selecione uma opcao nas abas acima");
         lblMensagem.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         painelBoasVindas.add(lblMensagem);
 
         this.painelEstoque = new PainelGerenciarEstoque(this.usuarioLogado);
+        this.painelVenda = new PainelVenda(this.usuarioLogado);
 
-        painelComAbas.addTab("Início", painelBoasVindas);
+        painelComAbas.addTab("Inicio", painelBoasVindas);
         painelComAbas.addTab("Gerenciar Estoque", this.painelEstoque);
+        painelComAbas.addTab("Ponto de Venda", this.painelVenda);
 
         painelComAbas.addChangeListener(new ChangeListener() {
-            @Override
             public void stateChanged(ChangeEvent e) {
                 if (painelComAbas.getSelectedComponent() == painelEstoque && !estoqueJaCarregado) {
-                    System.out.println("Aba de estoque selecionada. Carregando dados...");
                     painelEstoque.carregarEstoque();
                     estoqueJaCarregado = true;
+                }
+
+                else if (painelComAbas.getSelectedComponent() == painelVenda && !vendaJaCarregada) {
+                    painelVenda.buscarItens();
+                    vendaJaCarregada = true;
                 }
             }
         });
