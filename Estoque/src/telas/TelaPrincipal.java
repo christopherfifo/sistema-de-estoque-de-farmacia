@@ -17,7 +17,6 @@ public class TelaPrincipal extends JFrame {
 
     private boolean estoqueJaCarregado = false;
     private boolean vendaJaCarregada = false;
-    private boolean historicoJaCarregado = false;
 
     public TelaPrincipal(Funcionario funcionario) {
         this.usuarioLogado = funcionario;
@@ -56,9 +55,8 @@ public class TelaPrincipal extends JFrame {
                 } else if (painelComAbas.getSelectedComponent() == painelVenda && !vendaJaCarregada) {
                     painelVenda.buscarItens();
                     vendaJaCarregada = true;
-                } else if (painelComAbas.getSelectedComponent() == painelHistorico && !historicoJaCarregado) {
+                } else if (painelComAbas.getSelectedComponent() == painelHistorico) {
                     painelHistorico.carregarHistorico();
-                    historicoJaCarregado = true;
                 }
             }
         });

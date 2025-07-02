@@ -8,7 +8,7 @@ import gerencia.GerenciadorFuncionarios;
 
 public class Funcionario {
 
-    // Atributos do funcionário
+    private int id;
     private String nome;
     private String cpf;
     private String matricula;
@@ -19,8 +19,9 @@ public class Funcionario {
     private String nomeCargo;
     private String senha;
 
-    private Funcionario(String nome, String cpf, String matricula, String email, String telefone, String tipo,
+    private Funcionario(int id, String nome, String cpf, String matricula, String email, String telefone, String tipo,
             int idCargo, String nomeCargo) {
+        this.id = id;
         this.nome = nome;
         this.cpf = cpf;
         this.matricula = matricula;
@@ -31,9 +32,8 @@ public class Funcionario {
         this.nomeCargo = nomeCargo;
     }
 
-    // Construtor público para criar funcionário
     public Funcionario(String nome, String cpf, String matricula, String email, String telefone, String tipo,
-             String senha, String nomeCargo) {
+            String senha, String nomeCargo) {
         this.nome = nome;
         this.cpf = cpf;
         this.matricula = matricula;
@@ -44,25 +44,8 @@ public class Funcionario {
         this.nomeCargo = nomeCargo;
     }
 
-    public static int obterIdCargoPorNome(String nomeCargo) {
-        String sql = "SELECT id FROM Cargos WHERE nome = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nomeCargo);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("id");
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Erro ao obter id do cargo: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return -1; 
-    }
-
     public static Funcionario login(String matricula, String senha) {
-        String sql = "SELECT f.cpf, f.matricula, f.nome, f.email, f.telefone, f.tipo, f.id_cargo, c.nome as cargo_nome "
+        String sql = "SELECT f.id, f.cpf, f.matricula, f.nome, f.email, f.telefone, f.tipo, f.id_cargo, c.nome as cargo_nome "
                 +
                 "FROM Funcionarios f " +
                 "JOIN Cargos c ON f.id_cargo = c.id " +
@@ -77,6 +60,7 @@ public class Funcionario {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return new Funcionario(
+                            rs.getInt("id"), // Busca o ID
                             rs.getString("nome"),
                             rs.getString("cpf"),
                             rs.getString("matricula"),
@@ -92,6 +76,21 @@ public class Funcionario {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void criarFuncionario(String matriculaExecutor) {
+        GerenciadorFuncionarios gerenciadorFuncionarios = new GerenciadorFuncionarios();
+        boolean sucesso = gerenciadorFuncionarios.cadastrarFuncionario(matriculaExecutor, this);
+
+        if (sucesso) {
+            System.out.println("Funcionario '" + this.nome + "' cadastrado com sucesso");
+        } else {
+            System.err.println("Falha ao cadastrar o funcionario '" + this.nome + "'");
+        }
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getNome() {
@@ -124,20 +123,9 @@ public class Funcionario {
 
     public String getSenha() {
         return senha;
-    }   
+    }
 
     public String getNomeCargo() {
         return nomeCargo;
-    }
-
-    public void criarFuncionario(String matriculaExecutor) {
-        GerenciadorFuncionarios gerenciadorFuncionarios = new GerenciadorFuncionarios();
-        boolean sucesso = gerenciadorFuncionarios.cadastrarFuncionario(matriculaExecutor, this);
-
-        if (sucesso) {
-            System.out.println("Funcionário '" + this.nome + "' cadastrado com sucesso!");
-        } else {
-            System.err.println("Falha ao cadastrar o funcionário '" + this.nome + "'.");
-        }
     }
 }
