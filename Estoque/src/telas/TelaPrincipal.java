@@ -11,15 +11,18 @@ public class TelaPrincipal extends JFrame {
     private final Funcionario usuarioLogado;
     private PainelGerenciarEstoque painelEstoque;
     private PainelVenda painelVenda;
+    private PainelHistoricoVendas painelHistorico;
+
     private boolean estoqueJaCarregado = false;
     private boolean vendaJaCarregada = false;
+    private boolean historicoJaCarregado = false;
 
     public TelaPrincipal(Funcionario funcionario) {
         this.usuarioLogado = funcionario;
 
         setTitle("Sistema de Farmacia - Usuario: " + usuarioLogado.getNome() + " (" + usuarioLogado.getNomeCargo()
                 + ")");
-        setSize(800, 600);
+        setSize(850, 650);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -32,21 +35,24 @@ public class TelaPrincipal extends JFrame {
 
         this.painelEstoque = new PainelGerenciarEstoque(this.usuarioLogado);
         this.painelVenda = new PainelVenda(this.usuarioLogado);
+        this.painelHistorico = new PainelHistoricoVendas();
 
         painelComAbas.addTab("Inicio", painelBoasVindas);
-        painelComAbas.addTab("Gerenciar Estoque", this.painelEstoque);
         painelComAbas.addTab("Ponto de Venda", this.painelVenda);
+        painelComAbas.addTab("Gerenciar Estoque", this.painelEstoque);
+        painelComAbas.addTab("Historico de Vendas", this.painelHistorico);
 
         painelComAbas.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (painelComAbas.getSelectedComponent() == painelEstoque && !estoqueJaCarregado) {
                     painelEstoque.carregarEstoque();
                     estoqueJaCarregado = true;
-                }
-
-                else if (painelComAbas.getSelectedComponent() == painelVenda && !vendaJaCarregada) {
+                } else if (painelComAbas.getSelectedComponent() == painelVenda && !vendaJaCarregada) {
                     painelVenda.buscarItens();
                     vendaJaCarregada = true;
+                } else if (painelComAbas.getSelectedComponent() == painelHistorico && !historicoJaCarregado) {
+                    painelHistorico.carregarHistorico();
+                    historicoJaCarregado = true;
                 }
             }
         });
