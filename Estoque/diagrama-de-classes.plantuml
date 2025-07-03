@@ -1,0 +1,128 @@
+@startuml classes
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "Camada de Apresentação (telas)" {
+    class TelaPrincipal {
+        - usuarioLogado: Funcionario
+        + criarBarraDeMenu()
+        + exibirDialogoAlterarSenha()
+    }
+
+    class PainelVenda {
+        - carrinho: Carrinho
+        + buscarItens()
+        - adicionarAoCarrinho()
+        - finalizarVenda()
+    }
+    
+    class PainelGerenciarEstoque {
+        + carregarEstoque()
+        - modificarQuantidade()
+        - modificarLocal()
+    }
+
+    class PainelDashboard {
+        + carregarAlertas()
+    }
+    
+    class PainelGerenciarPermissoes {
+        - mapCheckboxes: Map<String, JCheckBox>
+        - carregarPermissoesDoFuncionario()
+        - salvarAlteracoes()
+    }
+
+    TelaPrincipal o-- "1" PainelVenda
+    TelaPrincipal o-- "1" PainelGerenciarEstoque
+    TelaPrincipal o-- "1" PainelDashboard
+    TelaPrincipal o-- "1" PainelGerenciarPermissoes
+}
+
+package "Camada de Lógica (gerencia, acessos)" {
+    class GerenciadorVendas {
+        + finalizarVenda(...)
+        + cancelarVenda(...)
+        + buscarUltimosPedidos()
+    }
+
+    class GerenciadorEstoque {
+        + buscarItensEstoque(...)
+        + modificarQuantidadeEstoque(...)
+        + buscarProdutosComEstoqueBaixo()
+    }
+
+    class GerenciadorPermissoes {
+        + concederPermissao(...)
+        + removerPermissao(...)
+        + getPermissoesDoCargo(...)
+    }
+
+    class ControleAcesso {
+        + temPermissao(matricula, permissao): boolean
+    }
+    
+    class Carrinho {
+        - itens: List<ItemCarrinho>
+        + adicionarItem(...)
+        + calcularTotal(): BigDecimal
+    }
+
+    PainelVenda ..> GerenciadorVendas
+    PainelGerenciarEstoque ..> GerenciadorEstoque
+    PainelDashboard ..> GerenciadorEstoque
+    PainelGerenciarPermissoes ..> GerenciadorPermissoes
+    PainelGerenciarPermissoes ..> GerenciadorFuncionarios
+    
+    GerenciadorVendas ..> ControleAcesso
+    GerenciadorEstoque ..> ControleAcesso
+    GerenciadorPermissoes ..> ControleAcesso
+}
+
+package "Camada de Dados (auxiliares, conex)" {
+    class Funcionario {
+        - id: int
+        - nome: String
+        - matricula: String
+        + login(matricula, senha): Funcionario
+    }
+    
+    class Estoque {
+        - id: int
+        - quantidade: int
+        - lote: String
+    }
+    
+    class Produto {
+        - id: int
+        - nome: String
+        - preco: BigDecimal
+    }
+    
+    class Pedido {
+        - id: long
+        - valorTotal: BigDecimal
+        - cancelado: boolean
+    }
+
+    class ItemCarrinho {
+        - quantidadeComprar: int
+    }
+
+    class DatabaseConnection <<Utility>> {
+        + {static} getConnection(): Connection
+    }
+    
+    GerenciadorVendas ..> DatabaseConnection
+    GerenciadorEstoque ..> DatabaseConnection
+    
+    Carrinho o-- "*" ItemCarrinho
+    ItemCarrinho o-- "1" Estoque
+    Estoque o-- "1" Produto
+    TelaPrincipal o-- "1" Funcionario
+    GerenciadorVendas o-- "1" Carrinho
+    GerenciadorVendas ..> Pedido
+}
+
+note "A camada de Apresentação (Telas)\nnão fala diretamente com a camada\nde Dados. Ela sempre passa pela\ncamada de Lógica (Gerenciadores)." as N1
+
+@enduml

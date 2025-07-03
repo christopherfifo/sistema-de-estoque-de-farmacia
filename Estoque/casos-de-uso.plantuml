@@ -1,0 +1,64 @@
+@startuml casos-de-uso
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Funcionário" as Func
+actor "Caixa"
+actor "Farmacêutico"
+actor "Gerente"
+actor "Administrador"
+
+' Heranças entre os atores
+Func <|-- Caixa
+Caixa <|-- Farmacêutico
+Farmacêutico <|-- Gerente
+Gerente <|-- Administrador
+
+
+package "Sistema da Farmácia" {
+  package "Funções Comuns" {
+    usecase "Fazer Login" as UC_Login
+    usecase "Alterar Própria Senha" as UC_Senha
+    usecase "Consultar Estoque" as UC_Consulta
+  }
+
+  package "Ponto de Venda" {
+    usecase "Realizar Venda Simples" as UC_Venda
+    usecase "Aplicar Desconto" as UC_Desconto
+    usecase "Validar e Vender com Receita" as UC_Receita
+    usecase "Cancelar Venda Anterior" as UC_Cancela
+    usecase "Ver Histórico de Vendas" as UC_Historico
+  }
+
+  package "Gestão de Estoque" {
+    usecase "Ver Alertas (Estoque Baixo / Vencimento)" as UC_Alerta
+    usecase "Atualizar Quantidade / Local" as UC_AttEstoque
+    usecase "Cadastrar Novo Produto" as UC_CadProduto
+  }
+
+  package "Administrativo" {
+    usecase "Gerenciar Permissões de Funcionários" as UC_AdminPerm
+    usecase "Cadastrar Novo Funcionário" as UC_AdminCad
+  }
+}
+
+' Ligações dos Atores com os Casos de Uso
+Func --> UC_Login
+Func --> UC_Senha
+
+Caixa --> UC_Venda
+Caixa --> UC_Consulta
+
+Farmacêutico --> UC_Receita
+Farmacêutico --> UC_Desconto
+Farmacêutico --> UC_AttEstoque
+Farmacêutico --> UC_Alerta
+
+Gerente --> UC_Cancela
+Gerente --> UC_CadProduto
+Gerente --> UC_Historico
+
+Administrador --> UC_AdminPerm
+Administrador --> UC_AdminCad
+
+@enduml
