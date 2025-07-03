@@ -1,13 +1,17 @@
-
+# VALE 10 !!!!!!!
 
 ### Christopher Willians Silva Couto - Gu3054047
 ### Gabriel Vitor Grossi Lourenço - Gu3054446
 
 # Sumário
 
+- [VALE 10 !!!!!!!](#vale-10-)
+    - [Christopher Willians Silva Couto - Gu3054047](#christopher-willians-silva-couto---gu3054047)
+    - [Gabriel Vitor Grossi Lourenço - Gu3054446](#gabriel-vitor-grossi-lourenço---gu3054446)
 - [Sumário](#sumário)
 - [Introdução](#introdução)
 - [Requisitos do Projeto](#requisitos-do-projeto)
+- [Estrutura do Projeto](#estrutura-do-projeto)
 - [Banco de Dados](#banco-de-dados)
   - [Tabela Permissões](#tabela-permissões)
   - [Tabelas Cargos](#tabelas-cargos)
@@ -22,9 +26,10 @@
 - [Tabela de Receitas](#tabela-de-receitas)
   - [Tabela de Profissionais](#tabela-de-profissionais)
 - [Classes e Funções](#classes-e-funções)
-  - [Gerenciador de Permissões](#gerenciador-de-permissões)
+  - [App](#app)
+  - [Tela de Login](#tela-de-login)
+  - [Tela Principal](#tela-principal)
 
----
 
 # Introdução
 
@@ -42,6 +47,95 @@ Desta forma, como foi requisitado pelo o professor da disciplina, usamos como fe
 - Criação de uma tela ou mais para a utilização das funcionalidades com filtro de acesso de acordo com as regras de hierarquia estabelecidas;
 - Documentação do projeto com diagrama de uso e fluxograma;
 
+# Estrutura do Projeto
+
+```
+sistema-de-estoque-de-farmacia/
+├─ Estoque/
+│  ├─ .externalToolBuilders/
+│  ├─ .vscode/
+│  │  └─ settings.json
+│  ├─ bin/
+│  │  ├─ acessos/
+│  │  │  ├─ ControleAcesso.class
+│  │  │  └─ GerenciadorPermissoes.class
+│  │  ├─ auxiliares/
+│  │  │  ├─ AreaEstoque.class
+│  │  │  ├─ Estoque.class
+│  │  │  ├─ Funcionario.class
+│  │  │  ├─ ItemCarrinho.class
+│  │  │  ├─ Pedido.class
+│  │  │  ├─ Produto.class
+│  │  │  ├─ Profissional.class
+│  │  │  └─ Receita.class
+│  │  ├─ conex/
+│  │  │  └─ DatabaseConnection.class
+│  │  ├─ database/
+│  │  │  ├─ db.sql
+│  │  │  └─ diagrama.mwb
+│  │  ├─ gerencia/
+│  │  │  ├─ Carrinho.class
+│  │  │  ├─ GeradorDeRecibos.class
+│  │  │  ├─ GerenciadorEstoque.class
+│  │  │  ├─ GerenciadorFuncionarios.class
+│  │  │  ├─ GerenciadorProdutos.class
+│  │  │  ├─ GerenciadorReceitas.class
+│  │  │  └─ GerenciadorVendas.class
+│  │  ├─ telas/
+│  │  │  ├─ PainelCadastroProduto.class
+│  │  │  ├─ PainelDashboard.class
+│  │  │  ├─ PainelGerenciarEstoque.class
+│  │  │  ├─ PainelHistoricoVendas.class
+│  │  │  ├─ PainelVenda.class
+│  │  │  ├─ TelaLogin.class
+│  │  │  ├─ TelaLogin$1.class
+│  │  │  ├─ TelaPrincipal.class
+│  │  │  └─ TelaPrincipal$1.class
+│  │  └─ App.class
+│  ├─ lib/
+│  ├─ src/
+│  │  ├─ acessos/
+│  │  │  ├─ ControleAcesso.java
+│  │  │  └─ GerenciadorPermissoes.java
+│  │  ├─ auxiliares/
+│  │  │  ├─ AreaEstoque.java
+│  │  │  ├─ Estoque.java
+│  │  │  ├─ Funcionario.java
+│  │  │  ├─ ItemCarrinho.java
+│  │  │  ├─ Pedido.java
+│  │  │  ├─ Produto.java
+│  │  │  ├─ Profissional.java
+│  │  │  └─ Receita.java
+│  │  ├─ conex/
+│  │  │  └─ DatabaseConnection.java
+│  │  ├─ database/
+│  │  │  ├─ db.sql
+│  │  │  └─ diagrama.mwb
+│  │  ├─ gerencia/
+│  │  │  ├─ Carrinho.java
+│  │  │  ├─ GeradorDeRecibos.java
+│  │  │  ├─ GerenciadorEstoque.java
+│  │  │  ├─ GerenciadorFuncionarios.java
+│  │  │  ├─ GerenciadorProdutos.java
+│  │  │  ├─ GerenciadorReceitas.java
+│  │  │  └─ GerenciadorVendas.java
+│  │  ├─ telas/
+│  │  │  ├─ PainelCadastrarFuncionario.java
+│  │  │  ├─ PainelCadastroProduto.java
+│  │  │  ├─ PainelDashboard.java
+│  │  │  ├─ PainelGerenciarEstoque.java
+│  │  │  ├─ PainelGerenciarPermissoes.java
+│  │  │  ├─ PainelHistoricoVendas.java
+│  │  │  ├─ PainelVenda.java
+│  │  │  ├─ TelaLogin.java
+│  │  │  └─ TelaPrincipal.java
+│  │  └─ App.java
+│  ├─ .classpath
+│  ├─ .gitignore
+│  └─ mysql-connector-j-9.3.0.jar
+├─ .project
+└─ README.md
+```
 # Banco de Dados
 
 ```sql
@@ -404,8 +498,499 @@ CREATE TABLE IF NOT EXISTS Profissional(
 A ***tabela Profissional*** complementa os dados das receitas com informações do profissional de saúde responsável pela prescrição. Ela inclui o nome do profissional, o tipo e número do registro (CRM, COFEN, etc.), estado de emissão, especialidade e a data da emissão do documento. Cada profissional está vinculado a uma receita específica (`id_receita`), e a tabela garante que os dados da prescrição tenham origem em um profissional habilitado, conforme exigências legais.
 # Classes e Funções
 
-## Gerenciador de Permissões
+## App
 
+```java
+import javax.swing.SwingUtilities;
+
+import javax.swing.UIManager;
+
+import telas.TelaLogin;
+
+  
+
+public class App {
+
+    public static void main(String[] args) {
+
+        UIManager.put("OptionPane.yesButtonText", "Sim");
+
+        UIManager.put("OptionPane.noButtonText", "Nao");
+
+  
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+
+                new TelaLogin().setVisible(true);
+
+            }
+
+        });
+
+    }
+
+}
+```
+
+arquivo principal da aplicação, ao rodar chama a tela de login.
+
+## Tela de Login
+
+```java
+package telas;
+
+  
+
+import javax.swing.*;
+
+import java.awt.event.ActionEvent;
+
+import java.awt.event.ActionListener;
+
+import auxiliares.Funcionario;
+
+  
+
+public class TelaLogin extends JFrame {
+
+  
+
+    private JTextField txtMatricula;
+
+    private JPasswordField txtSenha;
+
+    private JButton btnLogin;
+
+  
+
+    public TelaLogin() {
+
+        setTitle("Login - Sistema de Farmacia");
+
+        setSize(350, 200);
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setLocationRelativeTo(null);
+
+        setLayout(null);
+
+  
+
+        JLabel lblMatricula = new JLabel("Matrícula:");
+
+        lblMatricula.setBounds(30, 30, 80, 25);
+
+        add(lblMatricula);
+
+  
+
+        txtMatricula = new JTextField();
+
+        txtMatricula.setBounds(110, 30, 180, 25);
+
+        add(txtMatricula);
+
+  
+
+        JLabel lblSenha = new JLabel("Senha:");
+
+        lblSenha.setBounds(30, 70, 80, 25);
+
+        add(lblSenha);
+
+  
+
+        txtSenha = new JPasswordField();
+
+        txtSenha.setBounds(110, 70, 180, 25);
+
+        add(txtSenha);
+
+  
+
+        btnLogin = new JButton("Entrar");
+
+        btnLogin.setBounds(110, 110, 100, 30);
+
+        add(btnLogin);
+
+  
+
+        btnLogin.addActionListener(new ActionListener() {
+
+            @Override
+
+            public void actionPerformed(ActionEvent e) {
+
+                realizarLogin();
+
+            }
+
+        });
+
+    }
+
+  
+
+    private void realizarLogin() {
+
+        String matricula = txtMatricula.getText();
+
+        String senha = new String(txtSenha.getPassword());
+
+  
+
+        if (matricula.isEmpty() || senha.isEmpty()) {
+
+            JOptionPane.showMessageDialog(this, "Matrícula e senha são obrigatórios.", "Erro",
+
+                    JOptionPane.ERROR_MESSAGE);
+
+            return;
+
+        }
+
+  
+
+        Funcionario funcionarioLogado = Funcionario.login(matricula, senha);
+
+  
+
+        if (funcionarioLogado != null) {
+
+            JOptionPane.showMessageDialog(this, "Bem-vindo, " + funcionarioLogado.getNome() + "!", "Sucesso",
+
+                    JOptionPane.INFORMATION_MESSAGE);
+
+  
+
+            new TelaPrincipal(funcionarioLogado).setVisible(true);
+
+            this.dispose();
+
+        } else {
+
+            JOptionPane.showMessageDialog(this, "Matrícula ou senha inválida.", "Falha no Login",
+
+                    JOptionPane.ERROR_MESSAGE);
+
+        }
+
+    }
+
+}
+```
+
+Essa classe é responsável por criar a janela de login, ela cria os campos de matricula e senha, quando o formulário é enviado ele chama a função `realizarLogin` que faz a verificação dos campos (se estão preenchidos) caso tenha sucesso ele chama a função `Login` da classe `Funcionario` passando a matricula e senha como argumentos e recebe um objeto do tipo ***Funcionario***  com todas as informações do funcionário .
+
+Depois ele inicia a classe ***TelaPrincipal*** passando como argumento o objeto ***Funcionario*** e habilita a janela criada como visível.
+
+## Tela Principal
+
+```java
+package telas;
+
+  
+
+import javax.swing.*;
+
+import javax.swing.event.ChangeEvent;
+
+import javax.swing.event.ChangeListener;
+
+import acessos.ControleAcesso;
+
+import auxiliares.Funcionario;
+
+import gerencia.GerenciadorFuncionarios;
+
+import java.awt.*;
+
+  
+
+public class TelaPrincipal extends JFrame {
+
+  
+
+    private final Funcionario usuarioLogado;
+
+    private final ControleAcesso controleAcesso;
+
+    private PainelDashboard painelDashboard;
+
+    private PainelGerenciarEstoque painelEstoque;
+
+    private PainelVenda painelVenda;
+
+    private PainelHistoricoVendas painelHistorico;
+
+    private PainelCadastroProduto painelCadastro;
+
+    private PainelGerenciarPermissoes painelPermissoes;
+
+    private PainelCadastrarFuncionario painelCadastrarFuncionario;
+
+  
+
+    public TelaPrincipal(Funcionario funcionario) {
+
+        this.usuarioLogado = funcionario;
+
+        this.controleAcesso = new ControleAcesso();
+
+  
+
+        setTitle("Sistema de Farmacia - Usuario: " + usuarioLogado.getNome() + " (" + usuarioLogado.getNomeCargo()
+
+                + ")");
+
+        setSize(850, 650);
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setLocationRelativeTo(null);
+
+  
+
+        setJMenuBar(criarBarraDeMenu());
+
+  
+
+        JTabbedPane painelComAbas = new JTabbedPane();
+
+  
+
+        this.painelDashboard = new PainelDashboard();
+
+        this.painelVenda = new PainelVenda(this.usuarioLogado);
+
+        this.painelEstoque = new PainelGerenciarEstoque(this.usuarioLogado);
+
+        this.painelHistorico = new PainelHistoricoVendas();
+
+  
+
+        painelComAbas.addTab("Inicio (Dashboard)", this.painelDashboard);
+
+        painelComAbas.addTab("Ponto de Venda", this.painelVenda);
+
+        painelComAbas.addTab("Gerenciar Estoque", this.painelEstoque);
+
+        painelComAbas.addTab("Historico de Vendas", this.painelHistorico);
+
+  
+
+        JTabbedPane painelGestao = new JTabbedPane();
+
+  
+
+        if (controleAcesso.temPermissao(usuarioLogado.getMatricula(), "supervisionar_estoque")) {
+
+            this.painelCadastro = new PainelCadastroProduto(this.usuarioLogado);
+
+            painelGestao.addTab("Cadastro de Produtos", this.painelCadastro);
+
+        }
+
+  
+
+        if (controleAcesso.temPermissao(usuarioLogado.getMatricula(), "cadastrar_funcionarios")) {
+
+            this.painelCadastrarFuncionario = new PainelCadastrarFuncionario(this.usuarioLogado);
+
+            painelGestao.addTab("Cadastro de Funcionarios", this.painelCadastrarFuncionario);
+
+        }
+
+  
+
+        if (controleAcesso.temPermissao(usuarioLogado.getMatricula(), "controlar_acesso_funcionarios")) {
+
+            this.painelPermissoes = new PainelGerenciarPermissoes(this.usuarioLogado);
+
+            painelGestao.addTab("Gerenciar Permissoes", this.painelPermissoes);
+
+        }
+
+  
+
+        if (painelGestao.getTabCount() > 0) {
+
+            painelComAbas.addTab("Gestao", painelGestao);
+
+        }
+
+  
+
+        painelComAbas.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+
+                Component painelSelecionado = painelComAbas.getSelectedComponent();
+
+  
+
+                if (painelSelecionado == painelDashboard) {
+
+                    painelDashboard.carregarAlertas();
+
+                } else if (painelSelecionado == painelEstoque) {
+
+                    painelEstoque.carregarEstoque();
+
+                } else if (painelSelecionado == painelVenda) {
+
+                    painelVenda.buscarItens();
+
+                } else if (painelSelecionado == painelHistorico) {
+
+                    painelHistorico.carregarHistorico();
+
+                }
+
+            }
+
+        });
+
+  
+
+        painelDashboard.carregarAlertas();
+
+        add(painelComAbas);
+
+    }
+
+  
+
+    private JMenuBar criarBarraDeMenu() {
+
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu menuOpcoes = new JMenu("Opcoes");
+
+        JMenuItem itemAlterarSenha = new JMenuItem("Alterar Senha");
+
+        JMenuItem itemSair = new JMenuItem("Sair");
+
+  
+
+        itemAlterarSenha.addActionListener(e -> exibirDialogoAlterarSenha());
+
+  
+
+        itemSair.addActionListener(e -> {
+
+            TelaPrincipal.this.dispose();
+
+            new TelaLogin().setVisible(true);
+
+        });
+
+  
+
+        menuOpcoes.add(itemAlterarSenha);
+
+        menuOpcoes.addSeparator();
+
+        menuOpcoes.add(itemSair);
+
+  
+
+        menuBar.add(menuOpcoes);
+
+        return menuBar;
+
+    }
+
+  
+
+    private void exibirDialogoAlterarSenha() {
+
+        JPanel painel = new JPanel(new GridLayout(3, 2, 5, 5));
+
+        JPasswordField txtSenhaAntiga = new JPasswordField();
+
+        JPasswordField txtNovaSenha = new JPasswordField();
+
+        JPasswordField txtConfirmaSenha = new JPasswordField();
+
+  
+
+        painel.add(new JLabel("Senha Antiga:"));
+
+        painel.add(txtSenhaAntiga);
+
+        painel.add(new JLabel("Nova Senha:"));
+
+        painel.add(txtNovaSenha);
+
+        painel.add(new JLabel("Confirmar Nova Senha:"));
+
+        painel.add(txtConfirmaSenha);
+
+  
+
+        int result = JOptionPane.showConfirmDialog(this, painel, "Alterar Senha", JOptionPane.OK_CANCEL_OPTION,
+
+                JOptionPane.PLAIN_MESSAGE);
+
+  
+
+        if (result == JOptionPane.OK_OPTION) {
+
+            String senhaAntiga = new String(txtSenhaAntiga.getPassword());
+
+            String novaSenha = new String(txtNovaSenha.getPassword());
+
+            String confirmaSenha = new String(txtConfirmaSenha.getPassword());
+
+  
+
+            if (!novaSenha.equals(confirmaSenha)) {
+
+                JOptionPane.showMessageDialog(this, "A nova senha e a confirmacao nao conferem", "Erro",
+
+                        JOptionPane.ERROR_MESSAGE);
+
+                return;
+
+            }
+
+  
+
+            GerenciadorFuncionarios gerenciador = new GerenciadorFuncionarios();
+
+            boolean sucesso = gerenciador.alterarPropriaSenha(usuarioLogado.getMatricula(), senhaAntiga, novaSenha);
+
+  
+
+            if (sucesso) {
+
+                JOptionPane.showMessageDialog(this, "Senha alterada com sucesso", "Sucesso",
+
+                        JOptionPane.INFORMATION_MESSAGE);
+
+            } else {
+
+                JOptionPane.showMessageDialog(this, "Falha ao alterar a senha Verifique a senha antiga", "Erro",
+
+                        JOptionPane.ERROR_MESSAGE);
+
+            }
+
+        }
+
+    }
+
+}
+```
+
+Essa classe cria as janelas do usuário e deixa visíveis as funcionalidades de acordo com o cargo da pessoa logada, ou seja, ele chama a função `temPermissao` da classe ***controleAcesso*** passando a matricula e senha do usuário logado que por sua vez consulta no banco de dados se ele tem a permissão necessária para acessar tal janela.
+
+Além das abas de funcionalidades (controle de estoque, controle de funcionários etc.), ele também adiciona o campo opções que ao ser clicado disponibiliza o botão de fechar a aplicação e o botão de alterar a própria senha. Diante disso, ele inicia classe 
 
 
 
