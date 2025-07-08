@@ -32,8 +32,8 @@ public class GerenciadorProdutos {
 
             stmt.setString(1, produto.getNome());
             stmt.setString(2, produto.getDescricao());
-            stmt.setString(3, "Temperatura ambiente"); // Valor padrao por enquanto
-            stmt.setString(4, "nao"); // Valor padrao por enquanto
+            stmt.setString(3, "Temperatura ambiente");
+            stmt.setString(4, "nao");
             stmt.setString(5, produto.isReceitaObrigatoria() ? "sim" : "nao");
             stmt.setString(6, produto.getFabricante());
             stmt.setString(7, produto.getCategoria());

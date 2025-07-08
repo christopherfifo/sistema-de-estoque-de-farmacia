@@ -31,11 +31,9 @@ public class GerenciadorFuncionarios {
         }
 
         try (Connection conn = DatabaseConnection.getConnection()) {
-            // Inicia transação
             conn.setAutoCommit(false);
 
             try {
-                // 1. Criar permissões padrão baseadas no cargo
                 String tipoPermissao = mapearCargoParaTipoPermissao(novoFuncionario.getNomeCargo());
                 if (tipoPermissao == null) {
                     System.err.println("ERRO: Cargo '" + novoFuncionario.getNomeCargo() + "' não reconhecido.");
@@ -61,7 +59,6 @@ public class GerenciadorFuncionarios {
                     return false;
                 }
 
-                // 3. Cadastrar o funcionário vinculado ao cargo criado
                 boolean funcionarioCadastrado = inserirFuncionario(conn, novoFuncionario, idCargoPersonalizado);
 
                 if (funcionarioCadastrado) {
@@ -114,8 +111,6 @@ public class GerenciadorFuncionarios {
     }
 
     private int criarCargoPersonalizado(Connection conn, String nomeCargo, int idPermissao) throws SQLException {
-        // Cria uma nova linha na tabela Cargos com o nome do cargo e vincula às
-        // permissões
         String sql = "INSERT INTO Cargos (nome, id_permissao) VALUES (?, ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
