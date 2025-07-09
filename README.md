@@ -5,10 +5,6 @@
 
 # Sumário
 
-- [VALE 10 !!!!!!!](#vale-10-)
-    - [Christopher Willians Silva Couto - Gu3054047](#christopher-willians-silva-couto---gu3054047)
-    - [Gabriel Vitor Grossi Lourenço - Gu3054446](#gabriel-vitor-grossi-lourenço---gu3054446)
-- [Sumário](#sumário)
 - [Introdução](#introdução)
 - [Requisitos de Desenvolvimento](#requisitos-de-desenvolvimento)
 - [Estrutura do Projeto](#estrutura-do-projeto)
